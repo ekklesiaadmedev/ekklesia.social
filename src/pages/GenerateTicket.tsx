@@ -32,25 +32,35 @@ const GenerateTicket = () => {
     setShowClientForm(true);
   };
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     if (!clientData.name) {
       toast.error('Por favor, informe o nome');
       return;
     }
 
-    const ticket = generateTicket(
-      selectedService!, 
-      selectedType!, 
-      clientData
-    );
-    setGeneratedTicket(ticket.number);
-    toast.success('Senha gerada com sucesso!');
+    try {
+      const ticket = await generateTicket(
+        selectedService!, 
+        selectedType!, 
+        clientData
+      );
+      setGeneratedTicket(ticket.number);
+      toast.success('Senha gerada com sucesso!');
+    } catch (error) {
+      toast.error('Erro ao gerar senha');
+      console.error(error);
+    }
   };
 
-  const handleSkipForm = () => {
-    const ticket = generateTicket(selectedService!, selectedType!);
-    setGeneratedTicket(ticket.number);
-    toast.success('Senha gerada com sucesso!');
+  const handleSkipForm = async () => {
+    try {
+      const ticket = await generateTicket(selectedService!, selectedType!);
+      setGeneratedTicket(ticket.number);
+      toast.success('Senha gerada com sucesso!');
+    } catch (error) {
+      toast.error('Erro ao gerar senha');
+      console.error(error);
+    }
   };
 
   const handleNewTicket = () => {

@@ -1,15 +1,36 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Ticket, Monitor, UserCircle, Settings, BarChart3 } from 'lucide-react';
+import { Ticket, Monitor, UserCircle, Settings, BarChart3, LogIn, LogOut } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
 const Home = () => {
   const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+
+  const handleLogout = async () => {
+    await signOut();
+    toast.success('Logout realizado com sucesso!');
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/5 flex items-center justify-center p-4">
       <div className="max-w-6xl w-full">
         <div className="text-center mb-12 animate-fade-in">
+          <div className="flex justify-end mb-4">
+            {user ? (
+              <Button onClick={handleLogout} variant="outline" size="sm">
+                <LogOut className="w-4 h-4 mr-2" />
+                Sair
+              </Button>
+            ) : (
+              <Button onClick={() => navigate('/login')} variant="outline" size="sm">
+                <LogIn className="w-4 h-4 mr-2" />
+                Login Admin
+              </Button>
+            )}
+          </div>
           <h1 className="text-5xl md:text-6xl font-bold mb-4 bg-gradient-primary bg-clip-text text-transparent">
             Ekklesia Social
           </h1>

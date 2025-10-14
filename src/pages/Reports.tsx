@@ -2,8 +2,10 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useQueue } from '@/contexts/QueueContext';
-import { ArrowLeft, Download, BarChart3, Calendar, Users, Clock } from 'lucide-react';
+import { ArrowLeft, Download, FileText, BarChart3, Calendar, Users, Clock } from 'lucide-react';
 import { useState } from 'react';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const Reports = () => {
   const navigate = useNavigate();
@@ -69,6 +71,57 @@ const Reports = () => {
     link.click();
   };
 
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+    
+    // Header
+    doc.setFontSize(18);
+    doc.text('Relatório Ekklesia Social', 14, 20);
+    doc.setFontSize(11);
+    doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 14, 28);
+    
+    // Summary stats
+    doc.setFontSize(12);
+    doc.text('Resumo Geral', 14, 40);
+    doc.setFontSize(10);
+    doc.text(`Total de Senhas: ${totalTickets}`, 14, 48);
+    doc.text(`Concluídos: ${totalCompleted} (${totalTickets > 0 ? Math.round((totalCompleted / totalTickets) * 100) : 0}%)`, 14, 54);
+    doc.text(`Aguardando: ${totalWaiting}`, 14, 60);
+    doc.text(`Chamados: ${totalCalled}`, 14, 66);
+
+    // Table data
+    const tableData = tickets.map(t => {
+      const service = services.find(s => s.id === t.service);
+      const waitTime = t.calledAt 
+        ? Math.round((t.calledAt.getTime() - t.timestamp.getTime()) / 60000) 
+        : '-';
+      return [
+        t.number,
+        t.type === 'priority' ? 'Prior.' : 'Normal',
+        service?.name || '-',
+        t.status === 'completed' ? 'Concl.' : t.status === 'called' ? 'Cham.' : 'Aguard.',
+        new Date(t.timestamp).toLocaleString('pt-BR', { 
+          day: '2-digit', 
+          month: '2-digit', 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        }),
+        t.clientData?.name || '-',
+        `${waitTime}m`,
+      ];
+    });
+
+    autoTable(doc, {
+      startY: 75,
+      head: [['Senha', 'Tipo', 'Espec.', 'Status', 'Data/Hora', 'Cliente', 'Espera']],
+      body: tableData,
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [59, 130, 246] },
+    });
+
+    doc.save(`relatorio_ekklesia_${new Date().toISOString().split('T')[0]}.pdf`);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/5 p-4">
       <div className="max-w-7xl mx-auto">
@@ -87,10 +140,16 @@ const Reports = () => {
             </div>
           </div>
 
-          <Button onClick={exportToCSV} size="lg">
-            <Download className="w-5 h-5 mr-2" />
-            Exportar CSV
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={exportToCSV} size="lg" variant="outline">
+              <Download className="w-5 h-5 mr-2" />
+              CSV
+            </Button>
+            <Button onClick={exportToPDF} size="lg">
+              <FileText className="w-5 h-5 mr-2" />
+              PDF
+            </Button>
+          </div>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

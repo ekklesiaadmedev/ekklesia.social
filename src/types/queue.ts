@@ -28,34 +28,3 @@ export interface ServiceConfig {
   icon: string;
   color: string;
 }
-
-export const DEFAULT_SERVICES: ServiceConfig[] = [
-  {
-    id: 'cadastro',
-    name: 'Cadastro',
-    prefix: 'CA',
-    icon: 'UserPlus',
-    color: 'primary',
-  },
-  {
-    id: 'documentacao',
-    name: 'Documentação',
-    prefix: 'DC',
-    icon: 'FileText',
-    color: 'secondary',
-  },
-  {
-    id: 'alimentacao',
-    name: 'Alimentação',
-    prefix: 'AL',
-    icon: 'Utensils',
-    color: 'accent',
-  },
-  {
-    id: 'assistencia',
-    name: 'Assistência',
-    prefix: 'AS',
-    icon: 'Heart',
-    color: 'destructive',
-  },
-];

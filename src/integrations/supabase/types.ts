@@ -14,7 +14,92 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      services: {
+        Row: {
+          color: string
+          created_at: string
+          icon: string
+          id: string
+          name: string
+          prefix: string
+          service_id: string
+        }
+        Insert: {
+          color: string
+          created_at?: string
+          icon: string
+          id?: string
+          name: string
+          prefix: string
+          service_id: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          icon?: string
+          id?: string
+          name?: string
+          prefix?: string
+          service_id?: string
+        }
+        Relationships: []
+      }
+      tickets: {
+        Row: {
+          called_at: string | null
+          client_cpf: string | null
+          client_email: string | null
+          client_name: string | null
+          client_phone: string | null
+          completed_at: string | null
+          created_at: string
+          id: string
+          service_id: string
+          status: string
+          ticket_number: string
+          timestamp: string
+          type: string
+        }
+        Insert: {
+          called_at?: string | null
+          client_cpf?: string | null
+          client_email?: string | null
+          client_name?: string | null
+          client_phone?: string | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          service_id: string
+          status?: string
+          ticket_number: string
+          timestamp?: string
+          type: string
+        }
+        Update: {
+          called_at?: string | null
+          client_cpf?: string | null
+          client_email?: string | null
+          client_name?: string | null
+          client_phone?: string | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          service_id?: string
+          status?: string
+          ticket_number?: string
+          timestamp?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tickets_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["service_id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
