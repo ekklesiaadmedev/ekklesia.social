@@ -23,6 +23,8 @@ export type Database = {
           name: string
           prefix: string
           service_id: string
+          paused?: boolean
+          max_tickets?: number | null
         }
         Insert: {
           color: string
@@ -32,6 +34,8 @@ export type Database = {
           name: string
           prefix: string
           service_id: string
+          paused?: boolean
+          max_tickets?: number | null
         }
         Update: {
           color?: string
@@ -41,6 +45,8 @@ export type Database = {
           name?: string
           prefix?: string
           service_id?: string
+          paused?: boolean
+          max_tickets?: number | null
         }
         Relationships: []
       }
@@ -59,6 +65,9 @@ export type Database = {
           ticket_number: string
           timestamp: string
           type: string
+          canceled_at: string | null
+          notes: string | null
+          attendant_id: string | null
         }
         Insert: {
           called_at?: string | null
@@ -74,6 +83,9 @@ export type Database = {
           ticket_number: string
           timestamp?: string
           type: string
+          canceled_at?: string | null
+          notes?: string | null
+          attendant_id?: string | null
         }
         Update: {
           called_at?: string | null
@@ -89,6 +101,9 @@ export type Database = {
           ticket_number?: string
           timestamp?: string
           type?: string
+          canceled_at?: string | null
+          notes?: string | null
+          attendant_id?: string | null
         }
         Relationships: [
           {

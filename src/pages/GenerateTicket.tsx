@@ -5,18 +5,21 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useQueue } from '@/contexts/QueueContext';
+import { useQueue } from '@/contexts/queue-hooks';
 import { ServiceType, TicketType, ClientData } from '@/types/queue';
 import { ArrowLeft, Ticket as TicketIcon, AlertCircle, User } from 'lucide-react';
 import { toast } from 'sonner';
+import { notifyError } from '@/utils/error';
 
 const GenerateTicket = () => {
   const navigate = useNavigate();
-  const { generateTicket, services } = useQueue();
+  const { generateTicket, services, updateDisplayMessage, requeueTicketByNumber } = useQueue();
   const [selectedService, setSelectedService] = useState<ServiceType | null>(null);
   const [selectedType, setSelectedType] = useState<TicketType | null>(null);
   const [generatedTicket, setGeneratedTicket] = useState<string | null>(null);
   const [showClientForm, setShowClientForm] = useState(false);
+  const [panelMessage, setPanelMessage] = useState('');
+  const [requeueNumber, setRequeueNumber] = useState('');
   const [clientData, setClientData] = useState<ClientData>({
     name: '',
     cpf: '',
@@ -46,22 +49,12 @@ const GenerateTicket = () => {
       );
       setGeneratedTicket(ticket.number);
       toast.success('Senha gerada com sucesso!');
-    } catch (error) {
-      toast.error('Erro ao gerar senha');
-      console.error(error);
+    } catch (error: unknown) {
+      notifyError(error, 'Erro ao gerar senha');
     }
   };
 
-  const handleSkipForm = async () => {
-    try {
-      const ticket = await generateTicket(selectedService!, selectedType!);
-      setGeneratedTicket(ticket.number);
-      toast.success('Senha gerada com sucesso!');
-    } catch (error) {
-      toast.error('Erro ao gerar senha');
-      console.error(error);
-    }
-  };
+  // Removido o fluxo de "Pular" para garantir que os dados sejam sempre salvos
 
   const handleNewTicket = () => {
     setSelectedService(null);
@@ -73,7 +66,7 @@ const GenerateTicket = () => {
 
   if (generatedTicket) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/5 flex items-center justify-center p-4">
+      <div id="conteudo" className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/5 flex items-center justify-center p-4">
         <Card className="max-w-md w-full p-12 text-center animate-slide-up shadow-strong">
           <div className="mb-8">
             <div className="w-32 h-32 bg-gradient-primary rounded-full mx-auto flex items-center justify-center animate-pulse-glow mb-6">
@@ -111,7 +104,7 @@ const GenerateTicket = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/5 p-4">
+    <div id="conteudo" className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/5 p-4">
       <div className="max-w-4xl mx-auto">
         <div className="mb-8 flex items-center gap-4">
           <Button 
@@ -128,9 +121,55 @@ const GenerateTicket = () => {
         </div>
 
         <div className="space-y-6">
-          <Card className="p-8">
+          {/* Ferramentas de Triagem: mensagem do painel e recolocação de senha */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card className="p-6 md:p-8">
+              <h2 className="text-2xl font-semibold mb-4">Mensagem do Painel</h2>
+              <div className="space-y-3">
+                <Input
+                  value={panelMessage}
+                  onChange={(e) => setPanelMessage(e.target.value)}
+                  placeholder="Digite uma mensagem para o painel"
+                />
+                <Button
+                  onClick={() => {
+                    updateDisplayMessage(panelMessage.trim());
+                    toast.success('Mensagem do painel atualizada');
+                  }}
+                >
+                  Atualizar mensagem
+                </Button>
+              </div>
+            </Card>
+
+            <Card className="p-6 md:p-8">
+              <h2 className="text-2xl font-semibold mb-4">Recolocar Senha na Fila</h2>
+              <div className="space-y-3">
+                <Input
+                  value={requeueNumber}
+                  onChange={(e) => setRequeueNumber(e.target.value.toUpperCase())}
+                  placeholder="Ex.: AP-001 ou SN-123"
+                />
+                <Button
+                  variant="secondary"
+                  onClick={async () => {
+                    if (!requeueNumber.trim()) {
+                      toast.error('Informe o número da senha');
+                      return;
+                    }
+                    await requeueTicketByNumber(requeueNumber.trim());
+                    setRequeueNumber('');
+                  }}
+                >
+                  Recolocar na fila
+                </Button>
+                <p className="text-xs text-muted-foreground">Triagem não chama senhas; apenas recoloca ausentes.</p>
+              </div>
+            </Card>
+          </div>
+          <Card className="p-6 md:p-8">
             <h2 className="text-2xl font-semibold mb-6">Escolha o Serviço</h2>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {services.map((service) => (
                 <Button
                   key={service.id}
@@ -140,16 +179,16 @@ const GenerateTicket = () => {
                 >
                   <div className="text-left w-full">
                     <p className="font-semibold text-lg">{service.name}</p>
-                    <p className="text-sm opacity-80">Prefixo: {service.prefix}</p>
+                    <p className="text-sm opacity-80">Prefixo: {service.prefix} {service.paused ? '• Pausado' : ''}</p>
                   </div>
                 </Button>
               ))}
             </div>
           </Card>
 
-          <Card className="p-8">
+          <Card className="p-6 md:p-8">
             <h2 className="text-2xl font-semibold mb-6">Tipo de Atendimento</h2>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Button
                 onClick={() => setSelectedType('normal')}
                 variant={selectedType === 'normal' ? 'default' : 'outline'}
@@ -204,7 +243,7 @@ const GenerateTicket = () => {
                     <Input
                       id="name"
                       value={clientData.name}
-                      onChange={(e) => setClientData({ ...clientData, name: e.target.value })}
+                      onChange={(e) => setClientData({ ...clientData, name: e.target.value.toUpperCase() })}
                       placeholder="Digite o nome completo"
                     />
                   </div>
@@ -238,19 +277,11 @@ const GenerateTicket = () => {
                   </div>
                 </div>
 
-                <div className="flex gap-2 pt-4">
-                  <Button 
-                    onClick={handleSkipForm}
-                    variant="outline"
-                    size="lg"
-                    className="flex-1"
-                  >
-                    Pular
-                  </Button>
+                <div className="flex pt-4">
                   <Button 
                     onClick={handleGenerate}
                     size="lg"
-                    className="flex-1"
+                    className="w-full"
                   >
                     <TicketIcon className="w-5 h-5 mr-2" />
                     Gerar

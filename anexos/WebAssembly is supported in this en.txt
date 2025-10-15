@@ -1,0 +1,318 @@
+ WebAssembly is supported in this environment
+ WASM SDK loaded in 16ms
+ State version: 72
+ Migrator pl (to version 3) should migrate: false - up
+ Migrator fa (to version 4) should migrate: false - up
+ Migrator cs (to version 5) should migrate: false - up
+ Migrator Gs (to version 6) should migrate: false - up
+ Migrator Xo (to version 7) should migrate: false - up
+ Migrator cl (to version 8) should migrate: false - up
+ Migrator dl (to version 9) should migrate: false - up
+ Migrator wr (to version 10) should migrate: false - up
+ Migrator xr (to version 11) should migrate: false - up
+ Migrator Er (to version 12) should migrate: false - up
+ Migrator Pr (to version 13) should migrate: false - up
+ Migrator Dr (to version 14) should migrate: false - up
+ Migrator Ur (to version 15) should migrate: false - up
+ Migrator Lr (to version 16) should migrate: false - up
+ Migrator Vr (to version 17) should migrate: false - up
+ Migrator Wr (to version 18) should migrate: false - up
+ Migrator Jr (to version 19) should migrate: false - up
+ Migrator Xr (to version 20) should migrate: false - up
+ Migrator tn (to version 21) should migrate: false - up
+ Migrator an (to version 22) should migrate: false - up
+ Migrator cn (to version 23) should migrate: false - up
+ Migrator hn (to version 24) should migrate: false - up
+ Migrator gn (to version 25) should migrate: false - up
+ Migrator vn (to version 26) should migrate: false - up
+ Migrator kn (to version 27) should migrate: false - up
+ Migrator Cn (to version 28) should migrate: false - up
+ Migrator In (to version 29) should migrate: false - up
+ Migrator Pn (to version 30) should migrate: false - up
+ Migrator Dn (to version 31) should migrate: false - up
+ Migrator Un (to version 32) should migrate: false - up
+ Migrator Vn (to version 33) should migrate: false - up
+ Migrator Gn (to version 34) should migrate: false - up
+ Migrator Yn (to version 35) should migrate: false - up
+ Migrator ea (to version 36) should migrate: false - up
+ Migrator ra (to version 37) should migrate: false - up
+ Migrator da (to version 38) should migrate: false - up
+ Migrator ma (to version 39) should migrate: false - up
+ Migrator xa (to version 40) should migrate: false - up
+ Migrator Ia (to version 41) should migrate: false - up
+ Migrator ja (to version 42) should migrate: false - up
+ Migrator Ta (to version 43) should migrate: false - up
+ Migrator Na (to version 44) should migrate: false - up
+ Migrator Ba (to version 45) should migrate: false - up
+ Migrator Ka (to version 46) should migrate: false - up
+ Migrator ts (to version 47) should migrate: false - up
+ Migrator ns (to version 48) should migrate: false - up
+ Migrator os (to version 49) should migrate: false - up
+ Migrator ps (to version 50) should migrate: false - up
+ Migrator fs (to version 51) should migrate: false - up
+ Migrator ys (to version 52) should migrate: false - up
+ Migrator ks (to version 53) should migrate: false - up
+ Migrator _s (to version 54) should migrate: false - up
+ Migrator As (to version 55) should migrate: false - up
+ Migrator Ds (to version 56) should migrate: false - up
+ Migrator Fs (to version 57) should migrate: false - up
+ Migrator Bs (to version 58) should migrate: false - up
+ Migrator Ws (to version 59) should migrate: false - up
+ Migrator Zs (to version 60) should migrate: false - up
+ Migrator ao (to version 61) should migrate: false - up
+ Migrator mo (to version 62) should migrate: false - up
+ Migrator bo (to version 63) should migrate: false - up
+ Migrator So (to version 64) should migrate: false - up
+ Migrator Do (to version 65) should migrate: false - up
+ Migrator Lo (to version 66) should migrate: false - up
+ Migrator Vo (to version 67) should migrate: false - up
+ Migrator Wo (to version 68) should migrate: false - up
+ Migrator Qo (to version 69) should migrate: false - up
+ Migrator tl (to version 70) should migrate: false - up
+ Migrator nl (to version 71) should migrate: false - up
+ Migrator ol (to version 72) should migrate: false - up
+background.js:2 Uncaught (in promise) 
+ Using WebPush for server notifications
+ Cannot find menu item with id root
+write @ background.js:2
+ Cannot find menu item with id autofill
+write @ background.js:2
+ Cannot find menu item with id autofill-identity
+write @ background.js:2
+ Cannot find menu item with id autofill-card
+write @ background.js:2
+ Cannot find menu item with id root
+write @ background.js:2
+ Cannot find menu item with id autofill
+write @ background.js:2
+ Cannot find menu item with id autofill-identity
+write @ background.js:2
+ Cannot find menu item with id autofill-card
+write @ background.js:2
+ Cannot find menu item with id copy-username
+write @ background.js:2
+ Cannot find menu item with id autofill-identity
+write @ background.js:2
+ Cannot find menu item with id autofill-card
+write @ background.js:2
+ Cannot find menu item with id root
+write @ background.js:2
+ Cannot find menu item with id autofill
+write @ background.js:2
+ Cannot find menu item with id autofill-identity
+write @ background.js:2
+ Cannot find menu item with id autofill-card
+write @ background.js:2
+ Cannot find menu item with id root
+write @ background.js:2
+ Cannot find menu item with id autofill
+write @ background.js:2
+ Cannot find menu item with id autofill-identity
+write @ background.js:2
+ Cannot find menu item with id autofill-card
+write @ background.js:2
+ Cannot find menu item with id root
+write @ background.js:2
+ Cannot find menu item with id autofill
+write @ background.js:2
+background.js:2 Cannot find menu item with id autofill-identity
+write @ background.js:2
+background.js:2 Cannot find menu item with id autofill-card
+write @ background.js:2
+background.js:2 Error while processing message in RuntimeBackground 'triggerAutofillScriptInjection'. Error: No frame with id 7555 in tab with id 386934949
+write @ background.js:2
+background.js:2 Cannot find menu item with id root
+write @ background.js:2
+background.js:2 Cannot find menu item with id autofill
+write @ background.js:2
+background.js:2 Cannot find menu item with id autofill-identity
+write @ background.js:2
+background.js:2 Cannot find menu item with id autofill-card
+write @ background.js:2
+background.js:2 Cannot find menu item with id autofill-card
+write @ background.js:2
+background.js:2 Using WebPush for server notifications
+background.js:2 Using WebPush for server notifications
+background.js:2 Cannot find menu item with id root
+write @ background.js:2
+background.js:2 Cannot find menu item with id autofill
+write @ background.js:2
+background.js:2 Cannot find menu item with id autofill-identity
+write @ background.js:2
+background.js:2 Cannot find menu item with id autofill-card
+write @ background.js:2
+background.js:2 Using WebPush for server notifications
+background.js:2 Using WebPush for server notifications
+background.js:2 Cannot find menu item with id root
+write @ background.js:2
+background.js:2 Cannot find menu item with id autofill
+write @ background.js:2
+background.js:2 Cannot find menu item with id autofill-identity
+write @ background.js:2
+background.js:2 Cannot find menu item with id autofill-card
+write @ background.js:2
+background.js:2 Cannot find menu item with id autofill-card
+write @ background.js:2
+chunk-W6L2VRDA.js?v=c64480a8:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+useAuth.tsx:225 🎯 [DEBUG] Estado atual: {userId: undefined, email: undefined, profileRole: undefined, isAdmin: false, isTriage: false, …}
+useAuth.tsx:144 🚀 [DEBUG] useAuth useEffect iniciado
+useAuth.tsx:173 🔍 [DEBUG] Verificando sessão existente...
+react-router-dom.js?v=66cc2b34:4393 ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+warnOnce @ react-router-dom.js?v=66cc2b34:4393
+logDeprecation @ react-router-dom.js?v=66cc2b34:4396
+logV6DeprecationWarnings @ react-router-dom.js?v=66cc2b34:4399
+(anônimo) @ react-router-dom.js?v=66cc2b34:5271
+commitHookEffectListMount @ chunk-W6L2VRDA.js?v=c64480a8:16915
+commitPassiveMountOnFiber @ chunk-W6L2VRDA.js?v=c64480a8:18156
+commitPassiveMountEffects_complete @ chunk-W6L2VRDA.js?v=c64480a8:18129
+commitPassiveMountEffects_begin @ chunk-W6L2VRDA.js?v=c64480a8:18119
+commitPassiveMountEffects @ chunk-W6L2VRDA.js?v=c64480a8:18109
+flushPassiveEffectsImpl @ chunk-W6L2VRDA.js?v=c64480a8:19490
+flushPassiveEffects @ chunk-W6L2VRDA.js?v=c64480a8:19447
+performSyncWorkOnRoot @ chunk-W6L2VRDA.js?v=c64480a8:18868
+flushSyncCallbacks @ chunk-W6L2VRDA.js?v=c64480a8:9119
+commitRootImpl @ chunk-W6L2VRDA.js?v=c64480a8:19432
+commitRoot @ chunk-W6L2VRDA.js?v=c64480a8:19277
+finishConcurrentRender @ chunk-W6L2VRDA.js?v=c64480a8:18805
+performConcurrentWorkOnRoot @ chunk-W6L2VRDA.js?v=c64480a8:18718
+workLoop @ chunk-W6L2VRDA.js?v=c64480a8:197
+flushWork @ chunk-W6L2VRDA.js?v=c64480a8:176
+performWorkUntilDeadline @ chunk-W6L2VRDA.js?v=c64480a8:384
+react-router-dom.js?v=66cc2b34:4393 ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+warnOnce @ react-router-dom.js?v=66cc2b34:4393
+logDeprecation @ react-router-dom.js?v=66cc2b34:4396
+logV6DeprecationWarnings @ react-router-dom.js?v=66cc2b34:4402
+(anônimo) @ react-router-dom.js?v=66cc2b34:5271
+commitHookEffectListMount @ chunk-W6L2VRDA.js?v=c64480a8:16915
+commitPassiveMountOnFiber @ chunk-W6L2VRDA.js?v=c64480a8:18156
+commitPassiveMountEffects_complete @ chunk-W6L2VRDA.js?v=c64480a8:18129
+commitPassiveMountEffects_begin @ chunk-W6L2VRDA.js?v=c64480a8:18119
+commitPassiveMountEffects @ chunk-W6L2VRDA.js?v=c64480a8:18109
+flushPassiveEffectsImpl @ chunk-W6L2VRDA.js?v=c64480a8:19490
+flushPassiveEffects @ chunk-W6L2VRDA.js?v=c64480a8:19447
+performSyncWorkOnRoot @ chunk-W6L2VRDA.js?v=c64480a8:18868
+flushSyncCallbacks @ chunk-W6L2VRDA.js?v=c64480a8:9119
+commitRootImpl @ chunk-W6L2VRDA.js?v=c64480a8:19432
+commitRoot @ chunk-W6L2VRDA.js?v=c64480a8:19277
+finishConcurrentRender @ chunk-W6L2VRDA.js?v=c64480a8:18805
+performConcurrentWorkOnRoot @ chunk-W6L2VRDA.js?v=c64480a8:18718
+workLoop @ chunk-W6L2VRDA.js?v=c64480a8:197
+flushWork @ chunk-W6L2VRDA.js?v=c64480a8:176
+performWorkUntilDeadline @ chunk-W6L2VRDA.js?v=c64480a8:384
+contentscript.js:40034 Download the Vue Devtools extension for a better development experience:
+https://github.com/vuejs/vue-devtools
+contentscript.js:40035 You are running Vue in development mode.
+Make sure to turn on production mode when deploying for production.
+See more tips at https://vuejs.org/guide/deployment.html
+useAuth.tsx:151 🔄 [DEBUG] Auth state change: INITIAL_SESSION undefined
+useAuth.tsx:161 🚪 [DEBUG] Sem sessão, limpando perfil
+useAuth.tsx:225 🎯 [DEBUG] Estado atual: {userId: undefined, email: undefined, profileRole: undefined, isAdmin: false, isTriage: false, …}
+useAuth.tsx:177 📋 [DEBUG] Sessão encontrada: undefined
+useAuth.tsx:225 🎯 [DEBUG] Estado atual: {userId: undefined, email: undefined, profileRole: undefined, isAdmin: false, isTriage: false, …}
+useAuth.tsx:225 🎯 [DEBUG] Estado atual: {userId: undefined, email: undefined, profileRole: undefined, isAdmin: false, isTriage: false, …}
+useAuth.tsx:225 🎯 [DEBUG] Estado atual: {userId: undefined, email: undefined, profileRole: undefined, isAdmin: false, isTriage: false, …}
+useAuth.tsx:225 🎯 [DEBUG] Estado atual: {userId: undefined, email: undefined, profileRole: undefined, isAdmin: false, isTriage: false, …}
+useAuth.tsx:225 🎯 [DEBUG] Estado atual: {userId: undefined, email: undefined, profileRole: undefined, isAdmin: false, isTriage: false, …}
+useAuth.tsx:225 🎯 [DEBUG] Estado atual: {userId: undefined, email: undefined, profileRole: undefined, isAdmin: false, isTriage: false, …}
+useAuth.tsx:225 🎯 [DEBUG] Estado atual: {userId: undefined, email: undefined, profileRole: undefined, isAdmin: false, isTriage: false, …}
+useAuth.tsx:225 🎯 [DEBUG] Estado atual: {userId: undefined, email: undefined, profileRole: undefined, isAdmin: false, isTriage: false, …}
+useAuth.tsx:225 🎯 [DEBUG] Estado atual: {userId: undefined, email: undefined, profileRole: undefined, isAdmin: false, isTriage: false, …}
+useAuth.tsx:225 🎯 [DEBUG] Estado atual: {userId: undefined, email: undefined, profileRole: undefined, isAdmin: false, isTriage: false, …}
+useAuth.tsx:225 🎯 [DEBUG] Estado atual: {userId: undefined, email: undefined, profileRole: undefined, isAdmin: false, isTriage: false, …}
+useAuth.tsx:225 🎯 [DEBUG] Estado atual: {userId: undefined, email: undefined, profileRole: undefined, isAdmin: false, isTriage: false, …}
+useAuth.tsx:225 🎯 [DEBUG] Estado atual: {userId: undefined, email: undefined, profileRole: undefined, isAdmin: false, isTriage: false, …}
+useAuth.tsx:151 🔄 [DEBUG] Auth state change: SIGNED_IN dbba62ac-89a8-440a-9bf5-4fb02cd7730e
+useAuth.tsx:39 🔍 [DEBUG 1] loadProfile iniciado para usuário: dbba62ac-89a8-440a-9bf5-4fb02cd7730e social@ekklesia.com
+useAuth.tsx:57 🔄 [DEBUG 1] Carregando perfil do banco para usuário: dbba62ac-89a8-440a-9bf5-4fb02cd7730e
+useAuth.tsx:225 🎯 [DEBUG] Estado atual: {userId: 'dbba62ac-89a8-440a-9bf5-4fb02cd7730e', email: 'social@ekklesia.com', profileRole: undefined, isAdmin: false, isTriage: false, …}
+useAuth.tsx:225 🎯 [DEBUG] Estado atual: {userId: undefined, email: undefined, profileRole: undefined, isAdmin: false, isTriage: false, …}
+useAuth.tsx:225 🎯 [DEBUG] Estado atual: {userId: undefined, email: undefined, profileRole: undefined, isAdmin: false, isTriage: false, …}
+useAuth.tsx:196 🛑 [DEBUG] useAuth cleanup
+useAuth.tsx:144 🚀 [DEBUG] useAuth useEffect iniciado
+useAuth.tsx:173 🔍 [DEBUG] Verificando sessão existente...
+useAuth.tsx:144 🚀 [DEBUG] useAuth useEffect iniciado
+useAuth.tsx:173 🔍 [DEBUG] Verificando sessão existente...
+useAuth.tsx:151 🔄 [DEBUG] Auth state change: INITIAL_SESSION dbba62ac-89a8-440a-9bf5-4fb02cd7730e
+useAuth.tsx:39 🔍 [DEBUG 1] loadProfile iniciado para usuário: dbba62ac-89a8-440a-9bf5-4fb02cd7730e social@ekklesia.com
+useAuth.tsx:57 🔄 [DEBUG 1] Carregando perfil do banco para usuário: dbba62ac-89a8-440a-9bf5-4fb02cd7730e
+useAuth.tsx:225 🎯 [DEBUG] Estado atual: {userId: 'dbba62ac-89a8-440a-9bf5-4fb02cd7730e', email: 'social@ekklesia.com', profileRole: undefined, isAdmin: false, isTriage: false, …}
+:8082/:1 Error in event handler: TypeError: Cannot read properties of null (reading 'tagName')
+    at Readability._grabArticle (chrome-extension://llimhhconnjiflfimocjggfjdlmlhblm/js/plugins/readability.js:1140:37)
+    at Readability.parse (chrome-extension://llimhhconnjiflfimocjggfjdlmlhblm/js/plugins/readability.js:2248:31)
+    at Object.original_article (chrome-extension://llimhhconnjiflfimocjggfjdlmlhblm/content-script.js:94:61)
+    at Object.article (chrome-extension://llimhhconnjiflfimocjggfjdlmlhblm/content-script.js:148:44)
+    at Object.article (chrome-extension://llimhhconnjiflfimocjggfjdlmlhblm/content-script.js:198:23)
+    at Object.init (chrome-extension://llimhhconnjiflfimocjggfjdlmlhblm/content-script.js:570:19)
+    at chrome-extension://llimhhconnjiflfimocjggfjdlmlhblm/content-script.js:514:23
+useAuth.tsx:177 📋 [DEBUG] Sessão encontrada: dbba62ac-89a8-440a-9bf5-4fb02cd7730e
+useAuth.tsx:39 🔍 [DEBUG 2] loadProfile iniciado para usuário: dbba62ac-89a8-440a-9bf5-4fb02cd7730e social@ekklesia.com
+useAuth.tsx:52 ⏳ [DEBUG 2] Já carregando perfil para usuário dbba62ac-89a8-440a-9bf5-4fb02cd7730e, ignorando...
+useAuth.tsx:225 🎯 [DEBUG] Estado atual: {userId: 'dbba62ac-89a8-440a-9bf5-4fb02cd7730e', email: 'social@ekklesia.com', profileRole: undefined, isAdmin: false, isTriage: false, …}
+useAuth.tsx:151 🔄 [DEBUG] Auth state change: INITIAL_SESSION dbba62ac-89a8-440a-9bf5-4fb02cd7730e
+useAuth.tsx:39 🔍 [DEBUG 1] loadProfile iniciado para usuário: dbba62ac-89a8-440a-9bf5-4fb02cd7730e social@ekklesia.com
+useAuth.tsx:57 🔄 [DEBUG 1] Carregando perfil do banco para usuário: dbba62ac-89a8-440a-9bf5-4fb02cd7730e
+useAuth.tsx:225 🎯 [DEBUG] Estado atual: {userId: 'dbba62ac-89a8-440a-9bf5-4fb02cd7730e', email: 'social@ekklesia.com', profileRole: undefined, isAdmin: false, isTriage: false, …}
+useAuth.tsx:225 🎯 [DEBUG] Estado atual: {userId: undefined, email: undefined, profileRole: undefined, isAdmin: false, isTriage: false, …}
+useAuth.tsx:144 🚀 [DEBUG] useAuth useEffect iniciado
+useAuth.tsx:173 🔍 [DEBUG] Verificando sessão existente...
+useAuth.tsx:177 📋 [DEBUG] Sessão encontrada: dbba62ac-89a8-440a-9bf5-4fb02cd7730e
+useAuth.tsx:39 🔍 [DEBUG 2] loadProfile iniciado para usuário: dbba62ac-89a8-440a-9bf5-4fb02cd7730e social@ekklesia.com
+useAuth.tsx:52 ⏳ [DEBUG 2] Já carregando perfil para usuário dbba62ac-89a8-440a-9bf5-4fb02cd7730e, ignorando...
+useAuth.tsx:225 🎯 [DEBUG] Estado atual: {userId: 'dbba62ac-89a8-440a-9bf5-4fb02cd7730e', email: 'social@ekklesia.com', profileRole: undefined, isAdmin: false, isTriage: false, …}
+useAuth.tsx:151 🔄 [DEBUG] Auth state change: INITIAL_SESSION dbba62ac-89a8-440a-9bf5-4fb02cd7730e
+useAuth.tsx:39 🔍 [DEBUG 1] loadProfile iniciado para usuário: dbba62ac-89a8-440a-9bf5-4fb02cd7730e social@ekklesia.com
+useAuth.tsx:57 🔄 [DEBUG 1] Carregando perfil do banco para usuário: dbba62ac-89a8-440a-9bf5-4fb02cd7730e
+useAuth.tsx:225 🎯 [DEBUG] Estado atual: {userId: 'dbba62ac-89a8-440a-9bf5-4fb02cd7730e', email: 'social@ekklesia.com', profileRole: undefined, isAdmin: false, isTriage: false, …}
+useAuth.tsx:177 📋 [DEBUG] Sessão encontrada: dbba62ac-89a8-440a-9bf5-4fb02cd7730e
+useAuth.tsx:39 🔍 [DEBUG 2] loadProfile iniciado para usuário: dbba62ac-89a8-440a-9bf5-4fb02cd7730e social@ekklesia.com
+useAuth.tsx:52 ⏳ [DEBUG 2] Já carregando perfil para usuário dbba62ac-89a8-440a-9bf5-4fb02cd7730e, ignorando...
+useAuth.tsx:225 🎯 [DEBUG] Estado atual: {userId: 'dbba62ac-89a8-440a-9bf5-4fb02cd7730e', email: 'social@ekklesia.com', profileRole: undefined, isAdmin: false, isTriage: false, …}
+useAuth.tsx:67 ✅ [DEBUG 1] Perfil encontrado no banco: {id: 'dbba62ac-89a8-440a-9bf5-4fb02cd7730e', email: 'social@ekklesia.com', full_name: 'Administrador Social', role: 'admin', created_at: '2025-10-14T16:39:47.335132+00:00', …}
+useAuth.tsx:225 🎯 [DEBUG] Estado atual: {userId: 'dbba62ac-89a8-440a-9bf5-4fb02cd7730e', email: 'social@ekklesia.com', profileRole: undefined, isAdmin: false, isTriage: false, …}
+useAuth.tsx:225 🎯 [DEBUG] Estado atual: {userId: 'dbba62ac-89a8-440a-9bf5-4fb02cd7730e', email: 'social@ekklesia.com', profileRole: undefined, isAdmin: false, isTriage: false, …}
+useAuth.tsx:225 🎯 [DEBUG] Estado atual: {userId: 'dbba62ac-89a8-440a-9bf5-4fb02cd7730e', email: 'social@ekklesia.com', profileRole: undefined, isAdmin: false, isTriage: false, …}
+useAuth.tsx:67 ✅ [DEBUG 1] Perfil encontrado no banco: {id: 'dbba62ac-89a8-440a-9bf5-4fb02cd7730e', email: 'social@ekklesia.com', full_name: 'Administrador Social', role: 'admin', created_at: '2025-10-14T16:39:47.335132+00:00', …}
+useAuth.tsx:225 🎯 [DEBUG] Estado atual: {userId: 'dbba62ac-89a8-440a-9bf5-4fb02cd7730e', email: 'social@ekklesia.com', profileRole: 'admin', isAdmin: true, isTriage: false, …}
+useAuth.tsx:67 ✅ [DEBUG 1] Perfil encontrado no banco: {id: 'dbba62ac-89a8-440a-9bf5-4fb02cd7730e', email: 'social@ekklesia.com', full_name: 'Administrador Social', role: 'admin', created_at: '2025-10-14T16:39:47.335132+00:00', …}
+useAuth.tsx:225 🎯 [DEBUG] Estado atual: {userId: 'dbba62ac-89a8-440a-9bf5-4fb02cd7730e', email: 'social@ekklesia.com', profileRole: 'admin', isAdmin: true, isTriage: false, …}
+useAuth.tsx:67 ✅ [DEBUG 1] Perfil encontrado no banco: {id: 'dbba62ac-89a8-440a-9bf5-4fb02cd7730e', email: 'social@ekklesia.com', full_name: 'Administrador Social', role: 'admin', created_at: '2025-10-14T16:39:47.335132+00:00', …}
+useAuth.tsx:225 🎯 [DEBUG] Estado atual: {userId: 'dbba62ac-89a8-440a-9bf5-4fb02cd7730e', email: 'social@ekklesia.com', profileRole: 'admin', isAdmin: true, isTriage: false, …}
+useAuth.tsx:225 🎯 [DEBUG] Estado atual: {userId: 'dbba62ac-89a8-440a-9bf5-4fb02cd7730e', email: 'social@ekklesia.com', profileRole: 'admin', isAdmin: true, isTriage: false, …}
+useAuth.tsx:225 🎯 [DEBUG] Estado atual: {userId: undefined, email: undefined, profileRole: undefined, isAdmin: false, isTriage: false, …}
+useAuth.tsx:196 🛑 [DEBUG] useAuth cleanup
+useAuth.tsx:196 🛑 [DEBUG] useAuth cleanup
+useAuth.tsx:144 🚀 [DEBUG] useAuth useEffect iniciado
+useAuth.tsx:173 🔍 [DEBUG] Verificando sessão existente...
+useAuth.tsx:151 🔄 [DEBUG] Auth state change: INITIAL_SESSION dbba62ac-89a8-440a-9bf5-4fb02cd7730e
+useAuth.tsx:39 🔍 [DEBUG 1] loadProfile iniciado para usuário: dbba62ac-89a8-440a-9bf5-4fb02cd7730e social@ekklesia.com
+useAuth.tsx:57 🔄 [DEBUG 1] Carregando perfil do banco para usuário: dbba62ac-89a8-440a-9bf5-4fb02cd7730e
+useAuth.tsx:225 🎯 [DEBUG] Estado atual: {userId: 'dbba62ac-89a8-440a-9bf5-4fb02cd7730e', email: 'social@ekklesia.com', profileRole: undefined, isAdmin: false, isTriage: false, …}
+useAuth.tsx:225 🎯 [DEBUG] Estado atual: {userId: 'dbba62ac-89a8-440a-9bf5-4fb02cd7730e', email: 'social@ekklesia.com', profileRole: 'admin', isAdmin: true, isTriage: false, …}
+useAuth.tsx:225 🎯 [DEBUG] Estado atual: {userId: undefined, email: undefined, profileRole: undefined, isAdmin: false, isTriage: false, …}
+useAuth.tsx:196 🛑 [DEBUG] useAuth cleanup
+useAuth.tsx:144 🚀 [DEBUG] useAuth useEffect iniciado
+useAuth.tsx:173 🔍 [DEBUG] Verificando sessão existente...
+useAuth.tsx:151 🔄 [DEBUG] Auth state change: INITIAL_SESSION dbba62ac-89a8-440a-9bf5-4fb02cd7730e
+useAuth.tsx:39 🔍 [DEBUG 1] loadProfile iniciado para usuário: dbba62ac-89a8-440a-9bf5-4fb02cd7730e social@ekklesia.com
+useAuth.tsx:57 🔄 [DEBUG 1] Carregando perfil do banco para usuário: dbba62ac-89a8-440a-9bf5-4fb02cd7730e
+useAuth.tsx:225 🎯 [DEBUG] Estado atual: {userId: 'dbba62ac-89a8-440a-9bf5-4fb02cd7730e', email: 'social@ekklesia.com', profileRole: undefined, isAdmin: false, isTriage: false, …}
+useAuth.tsx:225 🎯 [DEBUG] Estado atual: {userId: undefined, email: undefined, profileRole: undefined, isAdmin: false, isTriage: false, …}
+useAuth.tsx:144 🚀 [DEBUG] useAuth useEffect iniciado
+useAuth.tsx:173 🔍 [DEBUG] Verificando sessão existente...
+useAuth.tsx:177 📋 [DEBUG] Sessão encontrada: dbba62ac-89a8-440a-9bf5-4fb02cd7730e
+useAuth.tsx:39 🔍 [DEBUG 2] loadProfile iniciado para usuário: dbba62ac-89a8-440a-9bf5-4fb02cd7730e social@ekklesia.com
+useAuth.tsx:52 ⏳ [DEBUG 2] Já carregando perfil para usuário dbba62ac-89a8-440a-9bf5-4fb02cd7730e, ignorando...
+useAuth.tsx:225 🎯 [DEBUG] Estado atual: {userId: 'dbba62ac-89a8-440a-9bf5-4fb02cd7730e', email: 'social@ekklesia.com', profileRole: undefined, isAdmin: false, isTriage: false, …}
+useAuth.tsx:151 🔄 [DEBUG] Auth state change: INITIAL_SESSION dbba62ac-89a8-440a-9bf5-4fb02cd7730e
+useAuth.tsx:39 🔍 [DEBUG 1] loadProfile iniciado para usuário: dbba62ac-89a8-440a-9bf5-4fb02cd7730e social@ekklesia.com
+useAuth.tsx:57 🔄 [DEBUG 1] Carregando perfil do banco para usuário: dbba62ac-89a8-440a-9bf5-4fb02cd7730e
+useAuth.tsx:225 🎯 [DEBUG] Estado atual: {userId: 'dbba62ac-89a8-440a-9bf5-4fb02cd7730e', email: 'social@ekklesia.com', profileRole: undefined, isAdmin: false, isTriage: false, …}
+useAuth.tsx:177 📋 [DEBUG] Sessão encontrada: dbba62ac-89a8-440a-9bf5-4fb02cd7730e
+useAuth.tsx:39 🔍 [DEBUG 2] loadProfile iniciado para usuário: dbba62ac-89a8-440a-9bf5-4fb02cd7730e social@ekklesia.com
+useAuth.tsx:52 ⏳ [DEBUG 2] Já carregando perfil para usuário dbba62ac-89a8-440a-9bf5-4fb02cd7730e, ignorando...
+useAuth.tsx:225 🎯 [DEBUG] Estado atual: {userId: 'dbba62ac-89a8-440a-9bf5-4fb02cd7730e', email: 'social@ekklesia.com', profileRole: undefined, isAdmin: false, isTriage: false, …}
+useAuth.tsx:67 ✅ [DEBUG 1] Perfil encontrado no banco: {id: 'dbba62ac-89a8-440a-9bf5-4fb02cd7730e', email: 'social@ekklesia.com', full_name: 'Administrador Social', role: 'admin', created_at: '2025-10-14T16:39:47.335132+00:00', …}
+useAuth.tsx:67 ✅ [DEBUG 1] Perfil encontrado no banco: {id: 'dbba62ac-89a8-440a-9bf5-4fb02cd7730e', email: 'social@ekklesia.com', full_name: 'Administrador Social', role: 'admin', created_at: '2025-10-14T16:39:47.335132+00:00', …}
+useAuth.tsx:225 🎯 [DEBUG] Estado atual: {userId: 'dbba62ac-89a8-440a-9bf5-4fb02cd7730e', email: 'social@ekklesia.com', profileRole: 'admin', isAdmin: true, isTriage: false, …}
+useAuth.tsx:67 ✅ [DEBUG 1] Perfil encontrado no banco: {id: 'dbba62ac-89a8-440a-9bf5-4fb02cd7730e', email: 'social@ekklesia.com', full_name: 'Administrador Social', role: 'admin', created_at: '2025-10-14T16:39:47.335132+00:00', …}
+useAuth.tsx:225 🎯 [DEBUG] Estado atual: {userId: 'dbba62ac-89a8-440a-9bf5-4fb02cd7730e', email: 'social@ekklesia.com', profileRole: 'admin', isAdmin: true, isTriage: false, …}

@@ -15,9 +15,12 @@ export interface Ticket {
   type: TicketType;
   service: ServiceType;
   timestamp: Date;
-  status: 'waiting' | 'called' | 'completed';
+  status: 'waiting' | 'called' | 'completed' | 'canceled';
   calledAt?: Date;
   completedAt?: Date;
+  canceledAt?: Date;
+  notes?: string;
+  attendantId?: string;
   clientData?: ClientData;
 }
 
@@ -27,4 +30,6 @@ export interface ServiceConfig {
   prefix: string;
   icon: string;
   color: string;
+  paused?: boolean;
+  maxTickets?: number | null;
 }
