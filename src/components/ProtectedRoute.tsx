@@ -1,29 +1,37 @@
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useMemo } from 'react';
+import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { Loader2 } from 'lucide-react';
 
-export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading } = useAuth();
-  const navigate = useNavigate();
+export function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading, profileLoaded } = useAuth();
 
-  useEffect(() => {
-    if (!loading && !user) {
-      navigate('/login');
-    }
-  }, [user, loading, navigate]);
+  console.log('🛡️ ProtectedRoute - Estado:', { 
+    hasUser: !!user, 
+    loading, 
+    profileLoaded,
+    userEmail: user?.email 
+  });
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/5 flex items-center justify-center">
-        <Loader2 className="w-12 h-12 animate-spin text-primary" />
-      </div>
-    );
+  // Aguarda carregamento inicial de auth/perfil antes de decidir
+  const isLoading = useMemo(() => {
+    const stillLoading = loading || (!user && !profileLoaded);
+    console.log('🔄 ProtectedRoute - isLoading:', stillLoading);
+    return stillLoading;
+  }, [loading, profileLoaded, user]);
+
+  if (isLoading) {
+    console.log('⏳ ProtectedRoute - Aguardando autenticação/perfil...');
+    return <div>Carregando...</div>;
   }
 
+  // Após carregar, se não tem usuário, redireciona para login
   if (!user) {
-    return null;
+    console.log('❌ ProtectedRoute - Sem usuário, redirecionando para login');
+    return <Navigate to="/login" replace />;
   }
 
+  console.log('✅ ProtectedRoute - Renderizando children');
   return <>{children}</>;
-};
+}
+
+export default ProtectedRoute;

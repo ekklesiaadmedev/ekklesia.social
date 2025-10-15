@@ -1,32 +1,77 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { useQueue } from '@/contexts/QueueContext';
-import { ArrowLeft, Download, FileText, BarChart3, Calendar, Users, Clock } from 'lucide-react';
-import { useState } from 'react';
+import { useQueue } from '@/contexts/queue-hooks';
+import { ArrowLeft, Download, FileText, BarChart3, Calendar as CalendarIcon, Users, Clock } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { DateRange } from 'react-day-picker';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
+import { Calendar as DayCalendar } from '@/components/ui/calendar';
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { supabase } from '@/integrations/supabase/client';
+import { SkeletonLoader } from '@/components/ui/skeleton-loader';
 
 const Reports = () => {
   const navigate = useNavigate();
   const { tickets, services } = useQueue();
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedRange, setSelectedRange] = useState<DateRange | undefined>({ from: new Date(), to: new Date() });
+  const [selectedService, setSelectedService] = useState<string>('all');
+  const [selectedAttendant, setSelectedAttendant] = useState<string>('all');
+  const [attendants, setAttendants] = useState<{ id: string; full_name: string | null; email: string | null }[]>([]);
+  const [loadingAttendants, setLoadingAttendants] = useState(true);
 
-  const todayTickets = tickets.filter(t => {
-    const ticketDate = new Date(t.timestamp).toISOString().split('T')[0];
-    return ticketDate === selectedDate;
+  useEffect(() => {
+    // Carregar atendentes (profiles) para filtro por nome
+    const loadAttendants = async () => {
+      setLoadingAttendants(true);
+      const { data, error } = await supabase.from('profiles').select('id, full_name, email');
+      if (!error) {
+        setAttendants((data ?? []) as { id: string; full_name: string | null; email: string | null }[]);
+      }
+      setLoadingAttendants(false);
+    };
+    loadAttendants();
+  }, []);
+
+  const formatDateBR = (date: Date) => date.toLocaleDateString('pt-BR');
+  const rangeLabel = (range: DateRange | undefined) => {
+    if (!range || !range.from || !range.to) return formatDateBR(new Date());
+    const from = formatDateBR(range.from);
+    const to = formatDateBR(range.to);
+    return from === to ? from : `${from} - ${to}`;
+  };
+
+  const periodTickets = tickets.filter(t => {
+    if (!selectedRange || !selectedRange.from || !selectedRange.to) return false;
+    const start = new Date(selectedRange.from);
+    start.setHours(0,0,0,0);
+    const end = new Date(selectedRange.to);
+    end.setHours(23,59,59,999);
+    const d = new Date(t.timestamp);
+    return d >= start && d <= end;
   });
+
+  const filteredTickets = useMemo(() => {
+    return periodTickets.filter(t => {
+      const serviceOk = selectedService === 'all' || t.service === selectedService;
+      const attendantOk = selectedAttendant === 'all' || t.attendantId === selectedAttendant;
+      return serviceOk && attendantOk;
+    });
+  }, [periodTickets, selectedService, selectedAttendant]);
 
   const totalTickets = tickets.length;
   const totalCompleted = tickets.filter(t => t.status === 'completed').length;
   const totalWaiting = tickets.filter(t => t.status === 'waiting').length;
   const totalCalled = tickets.filter(t => t.status === 'called').length;
 
-  const todayCompleted = todayTickets.filter(t => t.status === 'completed').length;
-  const todayTotal = todayTickets.length;
+  const todayCompleted = filteredTickets.filter(t => t.status === 'completed').length;
+  const todayTotal = filteredTickets.length;
 
   const serviceStats = services.map(service => {
-    const serviceTickets = tickets.filter(t => t.service === service.id);
+    const serviceTickets = filteredTickets.filter(t => t.service === service.id);
     const completed = serviceTickets.filter(t => t.status === 'completed').length;
     const avgWaitTime = serviceTickets
       .filter(t => t.calledAt && t.timestamp)
@@ -46,8 +91,8 @@ const Reports = () => {
   });
 
   const exportToCSV = () => {
-    const headers = ['Senha', 'Tipo', 'Especialidade', 'Status', 'Data/Hora', 'Cliente', 'Tempo de Espera'];
-    const rows = tickets.map(t => {
+    const headers = ['Senha', 'Tipo', 'Serviço', 'Status', 'Data/Hora', 'Cliente', 'Tempo de Espera'];
+    const rows = filteredTickets.map(t => {
       const service = services.find(s => s.id === t.service);
       const waitTime = t.calledAt 
         ? Math.round((t.calledAt.getTime() - t.timestamp.getTime()) / 60000) 
@@ -90,7 +135,7 @@ const Reports = () => {
     doc.text(`Chamados: ${totalCalled}`, 14, 66);
 
     // Table data
-    const tableData = tickets.map(t => {
+    const tableData = filteredTickets.map(t => {
       const service = services.find(s => s.id === t.service);
       const waitTime = t.calledAt 
         ? Math.round((t.calledAt.getTime() - t.timestamp.getTime()) / 60000) 
@@ -113,7 +158,7 @@ const Reports = () => {
 
     autoTable(doc, {
       startY: 75,
-      head: [['Senha', 'Tipo', 'Espec.', 'Status', 'Data/Hora', 'Cliente', 'Espera']],
+      head: [['Senha', 'Tipo', 'Serv.', 'Status', 'Data/Hora', 'Cliente', 'Espera']],
       body: tableData,
       styles: { fontSize: 8 },
       headStyles: { fillColor: [59, 130, 246] },
@@ -123,7 +168,7 @@ const Reports = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/5 p-4">
+    <div id="conteudo" className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/5 p-4">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -140,14 +185,14 @@ const Reports = () => {
             </div>
           </div>
 
-          <div className="flex gap-2">
-            <Button onClick={exportToCSV} size="lg" variant="outline">
+          <div className="flex gap-2 flex-wrap">
+            <Button onClick={exportToCSV} size="lg" variant="outline" aria-label="Gerar relatório CSV" title="Gerar relatório CSV">
               <Download className="w-5 h-5 mr-2" />
-              CSV
+              Gerar relatório (CSV)
             </Button>
-            <Button onClick={exportToPDF} size="lg">
+            <Button onClick={exportToPDF} size="lg" aria-label="Gerar relatório PDF" title="Gerar relatório PDF">
               <FileText className="w-5 h-5 mr-2" />
-              PDF
+              Gerar relatório (PDF)
             </Button>
           </div>
         </div>
@@ -184,8 +229,8 @@ const Reports = () => {
 
           <Card className="p-6">
             <div className="flex items-center gap-3 mb-2">
-              <Calendar className="w-5 h-5 text-secondary" />
-              <span className="text-sm text-muted-foreground">Hoje</span>
+              <CalendarIcon className="w-5 h-5 text-secondary" />
+            <span className="text-sm text-muted-foreground">Período selecionado</span>
             </div>
             <p className="text-3xl font-bold text-secondary">{todayTotal}</p>
             <p className="text-xs text-muted-foreground mt-1">{todayCompleted} concluídos</p>
@@ -194,13 +239,58 @@ const Reports = () => {
 
         <Card className="p-6 mb-8">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-semibold">Relatório Diário</h2>
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="px-4 py-2 rounded-md border border-input bg-background"
-            />
+            <h2 className="text-2xl font-semibold">Relatório por Período</h2>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-[260px] justify-start text-left" aria-label="Selecionar período do relatório" title="Selecionar período do relatório">
+                  <CalendarIcon className="w-5 h-5 mr-2" />
+                  {rangeLabel(selectedRange)}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="p-2" align="end">
+                <DayCalendar
+                  mode="range"
+                  selected={selectedRange}
+                  onSelect={(range) => setSelectedRange(range)}
+                />
+              </PopoverContent>
+            </Popover>
+            <div className="flex gap-2 flex-wrap">
+              <div className="min-w-[220px]">
+                <Label>Serviço</Label>
+                <Select value={selectedService} onValueChange={setSelectedService}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos</SelectItem>
+                    {services.map(s => (
+                      <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="min-w-[220px]">
+                <Label>Atendente</Label>
+                <Select value={selectedAttendant} onValueChange={setSelectedAttendant}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos</SelectItem>
+                    {loadingAttendants ? (
+                      <div className="p-2">
+                        <SkeletonLoader type="list" count={3} />
+                      </div>
+                    ) : (
+                      attendants.map(a => (
+                        <SelectItem key={a.id} value={a.id}>{a.full_name || a.email || a.id}</SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </div>
 
           <div className="grid md:grid-cols-3 gap-4">
@@ -222,7 +312,7 @@ const Reports = () => {
         </Card>
 
         <Card className="p-6">
-          <h2 className="text-2xl font-semibold mb-6">Por Especialidade</h2>
+          <h2 className="text-2xl font-semibold mb-6">Por Serviço</h2>
           <div className="space-y-4">
             {serviceStats.map((stat) => (
               <div key={stat.prefix} className="border-b last:border-0 pb-4 last:pb-0">

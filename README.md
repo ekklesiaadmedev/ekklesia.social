@@ -60,6 +60,40 @@ This project is built with:
 - shadcn-ui
 - Tailwind CSS
 
+## Environment variables
+
+Create a `.env` file based on `.env.example` and set:
+
+```
+VITE_SUPABASE_URL="https://YOUR_PROJECT_REF.supabase.co"
+VITE_SUPABASE_ANON_KEY="YOUR_ANON_KEY"
+```
+
+Do not commit `.env` files. `.gitignore` already includes `.env`.
+
+## Supabase migrations
+
+This project uses Supabase for database, auth and realtime.
+
+To apply migrations locally (requires Supabase CLI):
+
+```sh
+npm run supabase:migrate
+```
+
+What this does:
+- Enables Row Level Security for `public.tickets`
+- Adds `UNIQUE (ticket_number)` constraint
+- Creates RPC `generate_ticket_number(service_id text)` for atomic sequential ticket numbers
+
+## Running locally
+
+Ensure `.env` is configured before starting the dev server:
+
+```sh
+npm run dev
+```
+
 ## How can I deploy this project?
 
 Simply open [Lovable](https://lovable.dev/projects/d8a8f226-df0b-4841-a245-891897281de4) and click on Share -> Publish.

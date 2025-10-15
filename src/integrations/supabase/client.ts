@@ -2,8 +2,12 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = "https://tzwmpgbnoxaoodfcqnzb.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6d21wZ2Jub3hhb29kZmNxbnpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAzOTgwODMsImV4cCI6MjA3NTk3NDA4M30.2rCDfF12i9gFWE7hES3ddH52BuvHBQ8zX3oh91DlaLI";
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
+const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+
+if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
+  console.error('Supabase environment variables are missing. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.');
+}
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
@@ -13,5 +17,32 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     storage: localStorage,
     persistSession: true,
     autoRefreshToken: true,
-  }
+  },
+  // Garantir que todas as requisições incluam o header 'apikey'
+  global: {
+    fetch: (url, options = {}) => {
+      console.log(`🌐 Supabase fetch: ${url}`);
+      // Garante headers básicos e Authorization para chamadas de funções quando ausente
+      const mergedHeaders: Record<string, string> = {
+        ...(options.headers as Record<string, string> | undefined),
+        'User-Agent': 'Ekklesia.social/1.0',
+        apikey: SUPABASE_PUBLISHABLE_KEY,
+      };
+
+      // Para endpoints de Edge Functions, garanta Authorization com a chave pública se não houver
+      if (typeof url === 'string' && url.includes('/functions/v1/')) {
+        if (!('Authorization' in mergedHeaders)) {
+          mergedHeaders['Authorization'] = `Bearer ${SUPABASE_PUBLISHABLE_KEY}`;
+        }
+      }
+
+      return fetch(url, {
+        ...options,
+        headers: mergedHeaders,
+      });
+    },
+    headers: {
+      apikey: SUPABASE_PUBLISHABLE_KEY,
+    },
+  },
 });

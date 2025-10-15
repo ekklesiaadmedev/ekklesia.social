@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useQueue } from '@/contexts/QueueContext';
+import { useQueue } from '@/contexts/queue-hooks';
 import { ArrowLeft, Plus, Pencil, Trash2, UserPlus, FileText, Utensils, Heart, Stethoscope, Pill, Activity, Users, Clipboard, Package } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -46,6 +46,8 @@ const ServiceManagement = () => {
     prefix: '',
     icon: 'UserPlus',
     color: 'primary',
+    paused: false,
+    maxTickets: '' as number | '' | null,
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -67,19 +69,21 @@ const ServiceManagement = () => {
       prefix: formData.prefix.toUpperCase(),
       icon: formData.icon,
       color: formData.color,
+      paused: !!formData.paused,
+      maxTickets: formData.maxTickets === '' ? null : Number(formData.maxTickets),
     };
 
     if (editingService) {
       updateService(editingService.id, serviceData);
-      toast.success('Especialidade atualizada com sucesso!');
+      toast.success('Serviço atualizado com sucesso!');
     } else {
       addService(serviceData);
-      toast.success('Especialidade cadastrada com sucesso!');
+      toast.success('Serviço cadastrado com sucesso!');
     }
 
     setIsDialogOpen(false);
     setEditingService(null);
-    setFormData({ name: '', prefix: '', icon: 'UserPlus', color: 'primary' });
+    setFormData({ name: '', prefix: '', icon: 'UserPlus', color: 'primary', paused: false, maxTickets: '' });
   };
 
   const handleEdit = (service: ServiceConfig) => {
@@ -89,25 +93,27 @@ const ServiceManagement = () => {
       prefix: service.prefix,
       icon: service.icon,
       color: service.color,
+      paused: !!service.paused,
+      maxTickets: typeof service.maxTickets === 'number' ? service.maxTickets : '',
     });
     setIsDialogOpen(true);
   };
 
   const handleDelete = (serviceId: string) => {
-    if (confirm('Tem certeza que deseja excluir esta especialidade?')) {
+    if (confirm('Tem certeza que deseja excluir este serviço?')) {
       deleteService(serviceId);
-      toast.success('Especialidade excluída com sucesso!');
+      toast.success('Serviço excluído com sucesso!');
     }
   };
 
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
     setEditingService(null);
-    setFormData({ name: '', prefix: '', icon: 'UserPlus', color: 'primary' });
+    setFormData({ name: '', prefix: '', icon: 'UserPlus', color: 'primary', paused: false, maxTickets: '' });
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/5 p-4">
+    <div id="conteudo" className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/5 p-4">
       <div className="max-w-5xl mx-auto">
         <div className="mb-8 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -119,7 +125,7 @@ const ServiceManagement = () => {
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <div>
-              <h1 className="text-4xl font-bold">Gerenciar Especialidades</h1>
+              <h1 className="text-4xl font-bold">Gerenciar Serviços</h1>
               <p className="text-muted-foreground">Cadastre e gerencie os tipos de atendimento</p>
             </div>
           </div>
@@ -128,18 +134,18 @@ const ServiceManagement = () => {
             <DialogTrigger asChild>
               <Button size="lg" onClick={() => setEditingService(null)}>
                 <Plus className="w-5 h-5 mr-2" />
-                Nova Especialidade
+                Novo Serviço
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>
-                  {editingService ? 'Editar Especialidade' : 'Nova Especialidade'}
+                  {editingService ? 'Editar Serviço' : 'Novo Serviço'}
                 </DialogTitle>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <Label htmlFor="name">Nome da Especialidade *</Label>
+                  <Label htmlFor="name">Nome do Serviço *</Label>
                   <Input
                     id="name"
                     value={formData.name}
@@ -191,6 +197,29 @@ const ServiceManagement = () => {
                     ))}
                   </select>
                 </div>
+                <div>
+                  <Label htmlFor="paused">Pausar geração de senhas</Label>
+                  <select
+                    id="paused"
+                    value={formData.paused ? 'true' : 'false'}
+                    onChange={(e) => setFormData({ ...formData, paused: e.target.value === 'true' })}
+                    className="w-full h-10 px-3 rounded-md border border-input bg-background"
+                  >
+                    <option value="false">Ativo</option>
+                    <option value="true">Pausado</option>
+                  </select>
+                </div>
+                <div>
+                  <Label htmlFor="maxTickets">Limite máximo de senhas (por dia)</Label>
+                  <Input
+                    id="maxTickets"
+                    type="number"
+                    min={0}
+                    value={formData.maxTickets ?? ''}
+                    onChange={(e) => setFormData({ ...formData, maxTickets: e.target.value ? Number(e.target.value) : '' })}
+                    placeholder="Sem limite"
+                  />
+                </div>
                 <div className="flex gap-2 pt-4">
                   <Button type="button" variant="outline" onClick={handleCloseDialog} className="flex-1">
                     Cancelar
@@ -217,6 +246,12 @@ const ServiceManagement = () => {
                     <p className="text-sm text-muted-foreground">
                       Prefixo: {service.prefix} | Ícone: {service.icon}
                     </p>
+                    {service.paused && (
+                      <p className="text-xs mt-1 text-destructive">Geração de senhas pausada</p>
+                    )}
+                    {typeof service.maxTickets === 'number' && (
+                      <p className="text-xs mt-1 text-muted-foreground">Limite diário: {service.maxTickets}</p>
+                    )}
                   </div>
                 </div>
                 <div className="flex gap-2">
