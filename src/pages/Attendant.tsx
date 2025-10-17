@@ -15,7 +15,10 @@ const Attendant = () => {
   const { tickets, currentTicket, callNextTicket, recallTicket, completeTicket, cancelTicket, getWaitingTickets, services, getServiceHistory, displayMessage, updateDisplayMessage } = useQueue();
   const [selectedService, setSelectedService] = useState<string | null>(null);
   const [notes, setNotes] = useState<string>('');
-  const { user } = useAuth();
+  const { user, isAdmin, isService } = useAuth();
+
+  // 🔧 [FIX] Admin tem acesso completo, service tem acesso limitado ao seu papel
+  const canCallNext = isAdmin || isService;
 
   const handleCallNext = () => {
     if (selectedService === null) return;
@@ -65,7 +68,7 @@ const Attendant = () => {
       <PageHeader
         backTo="/"
         title="Painel do Atendente"
-        description="Gerenciar atendimentos"
+        description={isAdmin ? "Gerenciar atendimentos (Acesso Administrativo)" : "Gerenciar atendimentos"}
         breadcrumbItems={[{ label: 'Início', to: '/' }, { label: 'Atendente' }]}
         actions={(
           <div className="flex flex-wrap gap-4">
@@ -284,50 +287,61 @@ const Attendant = () => {
               )}
 
               <div className="pt-6 border-t">
-                <Button 
-                  onClick={handleCallNext}
-                  disabled={waitingTickets.length === 0 || selectedService === null}
-                  className="w-full"
-                  size="lg"
-                  variant="secondary"
-                >
-                  <Bell className="w-5 h-5 mr-2" />
-                  Chamar próxima senha
-                </Button>
+                {(isAdmin || isService) ? (
+                  <Button 
+                    onClick={handleCallNext}
+                    disabled={waitingTickets.length === 0 || selectedService === null}
+                    className="w-full"
+                    size="lg"
+                    variant="secondary"
+                  >
+                    <Bell className="w-5 h-5 mr-2" />
+                    Chamar próxima senha
+                  </Button>
+                ) : (
+                  <div className="text-center p-4 bg-muted/50 rounded-lg">
+                    <p className="text-sm text-muted-foreground">
+                      Você não tem permissão para chamar senhas.
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Apenas administradores e atendentes de serviço podem chamar senhas.
+                    </p>
+                  </div>
+                )}
               </div>
             </Card>
 
-            <Card className="p-8">
-              <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
-                <History className="w-6 h-6 text-primary" />
-                Histórico do Serviço
-              </h2>
-              {selectedService ? (
-                <div className="space-y-3">
-                  {getServiceHistory(selectedService).slice(0, 10).map((t) => (
-                    <div key={t.id} className="flex items-center justify-between p-4 rounded-lg border">
-                      <div className="flex items-center gap-4">
-                        <div className="text-2xl font-bold">{t.number}</div>
-                        <div>
-                          <p className="font-medium">{services.find(s => s.id === t.service)?.name}</p>
-                          <p className="text-sm text-muted-foreground">{t.calledAt?.toLocaleTimeString('pt-BR') || t.completedAt?.toLocaleTimeString('pt-BR') || t.canceledAt?.toLocaleTimeString('pt-BR')}</p>
-                        </div>
+          <Card className="p-8">
+            <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
+              <History className="w-6 h-6 text-primary" />
+              Histórico do Serviço
+            </h2>
+            {selectedService ? (
+              <div className="space-y-3">
+                {getServiceHistory(selectedService).slice(0, 10).map((t) => (
+                  <div key={t.id} className="flex items-center justify-between p-4 rounded-lg border">
+                    <div className="flex items-center gap-4">
+                      <div className="text-2xl font-bold">{t.number}</div>
+                      <div>
+                        <p className="font-medium">{services.find(s => s.id === t.service)?.name}</p>
+                        <p className="text-sm text-muted-foreground">{t.calledAt?.toLocaleTimeString('pt-BR') || t.completedAt?.toLocaleTimeString('pt-BR') || t.canceledAt?.toLocaleTimeString('pt-BR')}</p>
                       </div>
-                      <Badge variant={t.status === 'canceled' ? 'destructive' : t.status === 'completed' ? 'secondary' : 'outline'}>
-                        {t.status === 'canceled' ? 'Cancelado' : t.status === 'completed' ? 'Atendido' : 'Chamado'}
-                      </Badge>
                     </div>
-                  ))}
-                  {getServiceHistory(selectedService).length === 0 && (
-                    <div className="text-center py-6 text-muted-foreground">Sem histórico recente para este serviço.</div>
-                  )}
-                </div>
-              ) : (
-                <div className="text-center py-6 text-muted-foreground">Selecione um serviço para visualizar o histórico.</div>
-              )}
-            </Card>
-          </div>
+                    <Badge variant={t.status === 'canceled' ? 'destructive' : t.status === 'completed' ? 'secondary' : 'outline'}>
+                      {t.status === 'canceled' ? 'Cancelado' : t.status === 'completed' ? 'Atendido' : 'Chamado'}
+                    </Badge>
+                  </div>
+                ))}
+                {getServiceHistory(selectedService).length === 0 && (
+                  <div className="text-center py-6 text-muted-foreground">Sem histórico recente para este serviço.</div>
+                )}
+              </div>
+            ) : (
+              <div className="text-center py-6 text-muted-foreground">Selecione um serviço para visualizar o histórico.</div>
+            )}
+          </Card>
         </div>
+      </div>
     </AppLayout>
   );
 };

@@ -21,11 +21,18 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
   // Garantir que todas as requisições incluam o header 'apikey'
   global: {
     fetch: (url, options = {}) => {
-      console.log(`🌐 Supabase fetch: ${url}`);
+      console.log(`🌐 [SUPABASE_CLIENT] Fetch: ${url}`, {
+        method: options.method || 'GET',
+        headers: options.headers,
+        body: options.body ? 'presente' : 'ausente'
+      });
+      
       // Garante headers básicos e Authorization para chamadas de funções quando ausente
       const mergedHeaders: Record<string, string> = {
         ...(options.headers as Record<string, string> | undefined),
         'User-Agent': 'Ekklesia.social/1.0',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
         apikey: SUPABASE_PUBLISHABLE_KEY,
       };
 
@@ -36,9 +43,25 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
         }
       }
 
+      console.log(`🌐 [SUPABASE_CLIENT] Headers finais:`, mergedHeaders);
+
       return fetch(url, {
         ...options,
         headers: mergedHeaders,
+      }).then(response => {
+        console.log(`🌐 [SUPABASE_CLIENT] Resposta:`, {
+          url,
+          status: response.status,
+          statusText: response.statusText,
+          headers: Object.fromEntries(response.headers.entries())
+        });
+        return response;
+      }).catch(error => {
+        console.error(`🌐 [SUPABASE_CLIENT] Erro na requisição:`, {
+          url,
+          error
+        });
+        throw error;
       });
     },
     headers: {

@@ -36,20 +36,29 @@ const GenerateTicket = () => {
   };
 
   const handleGenerate = async () => {
+    console.log('🎫 [GENERATE_TICKET_PAGE] Iniciando geração de senha na página:', {
+      selectedService,
+      selectedType,
+      clientData
+    });
+    
     if (!clientData.name) {
       toast.error('Por favor, informe o nome');
       return;
     }
 
     try {
+      console.log('🎫 [GENERATE_TICKET_PAGE] Chamando generateTicket...');
       const ticket = await generateTicket(
         selectedService!, 
         selectedType!, 
         clientData
       );
+      console.log('🎫 [GENERATE_TICKET_PAGE] Senha gerada com sucesso:', ticket);
       setGeneratedTicket(ticket.number);
       toast.success('Senha gerada com sucesso!');
     } catch (error: unknown) {
+      console.error('🎫 [GENERATE_TICKET_PAGE] Erro ao gerar senha:', error);
       notifyError(error, 'Erro ao gerar senha');
     }
   };

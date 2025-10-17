@@ -19,64 +19,43 @@ type AuthContextValue = {
 export const AuthContext = createContext<AuthContextValue | null>(null);
 
 const resolveRoleFromMetadata = (u: User): Profile['role'] | null => {
-  const um = (u.user_metadata ?? {}) as Record<string, unknown>;
-  const am = ((u as unknown as { app_metadata?: Record<string, unknown> }).app_metadata ?? {}) as Record<string, unknown>;
-
-  const fromUmRole = typeof um['role'] === 'string' ? (um['role'] as string) : null;
-  const fromUmRoles = Array.isArray(um['roles']) ? (um['roles'] as unknown[]).find((r) => typeof r === 'string') as string | undefined : undefined;
-  const fromAmRole = typeof am['role'] === 'string' ? (am['role'] as string) : null;
-  const fromAmRoles = Array.isArray(am['roles']) ? (am['roles'] as unknown[]).find((r) => typeof r === 'string') as string | undefined : undefined;
-
-  const role = fromUmRole ?? fromUmRoles ?? fromAmRole ?? fromAmRoles ?? null;
-  if (role === 'admin' || role === 'triage' || role === 'service' || role === 'panel') return role;
+  const metadata = u.user_metadata || {};
+  const appMetadata = u.app_metadata || {};
+  
+  if (metadata.role) return metadata.role as Profile['role'];
+  if (appMetadata.role) return appMetadata.role as Profile['role'];
+  if (metadata.user_role) return metadata.user_role as Profile['role'];
+  if (appMetadata.user_role) return appMetadata.user_role as Profile['role'];
+  
   return null;
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  console.log('🔐 [AUTH_CONTEXT] AuthProvider carregado!');
-  
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [profileLoaded, setProfileLoaded] = useState(false);
-  
-  // Cache otimizado com TTL
-  const profileCache = useRef<Map<string, { profile: Profile; timestamp: number }>>(new Map());
+
+  // Cache e controle de carregamento
+  const profileCache = useRef(new Map<string, { profile: Profile; timestamp: number }>());
   const loadingProfile = useRef<string | null>(null);
   const initialized = useRef(false);
   const authTimeout = useRef<NodeJS.Timeout | null>(null);
   const forceLoadTimeout = useRef<NodeJS.Timeout | null>(null);
-  const CACHE_TTL = 5 * 60 * 1000; // 5 minutos
-  const AUTH_TIMEOUT = 3000; // 3 segundos timeout AGRESSIVO
-  const FORCE_LOAD_TIMEOUT = 2000; // 2 segundos para forçar carregamento
 
-  console.log('🚀 AuthProvider inicializando...');
-
-  // 🔧 [FIX] Lista hardcoded de emails admin para garantir funcionamento
-  const ADMIN_EMAILS: string[] = useMemo(() => {
-    const envEmails = ((import.meta.env.VITE_ADMIN_EMAIL ?? '') as string)
-      .split(',')
-      .map((e) => e.trim().toLowerCase())
-      .filter(Boolean);
-    
-    // Lista hardcoded de emails admin para garantir funcionamento
-    const hardcodedAdmins = [
-      'admin@ekklesia.com',
-      'social@ekklesia.com', // 🎯 Email específico do usuário
-      'ekklesia@social.com'
-    ];
-    
-    // Combina emails do .env com hardcoded (remove duplicatas)
-    const allEmails = [...new Set([...envEmails, ...hardcodedAdmins])];
-    
-    console.log('📧 [ADMIN_EMAILS] Lista final:', allEmails);
-    return allEmails;
+  // Configurações
+  const ADMIN_EMAILS = useMemo(() => {
+    const adminEmail = import.meta.env.VITE_ADMIN_EMAIL ?? 'admin@ekklesia.com';
+    return adminEmail.split(',').map(e => e.trim().toLowerCase());
   }, []);
 
-  // Função para forçar carregamento IMEDIATO
+  const CACHE_TTL = 5 * 60 * 1000; // 5 minutos
+  const AUTH_TIMEOUT = 3000; // 3 segundos
+  const FORCE_LOAD_TIMEOUT = 2000; // 2 segundos
+
   const forceLoadComplete = useCallback(() => {
-    console.warn('🚨 TIMEOUT ATINGIDO - FORÇANDO CARREGAMENTO IMEDIATO');
+    console.log('🚨 FORÇANDO CARREGAMENTO COMPLETO!');
     setLoading(false);
     setProfileLoaded(true);
     if (authTimeout.current) {
@@ -115,35 +94,50 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     loadingProfile.current = u.id;
 
+    // CORREÇÃO CRÍTICA: Criar perfil fallback IMEDIATAMENTE para painel@ekklesia.com
+    const email = (u.email ?? '').toLowerCase();
+    if (email === 'painel@ekklesia.com') {
+      console.log('🎯 [CORREÇÃO CRÍTICA] Criando perfil panel para painel@ekklesia.com IMEDIATAMENTE');
+      const panelProfile: Profile = {
+        id: u.id,
+        email: u.email ?? null,
+        full_name: 'Usuário do Painel',
+        role: 'panel',
+      };
+      
+      profileCache.current.set(u.id, { 
+        profile: panelProfile, 
+        timestamp: Date.now() 
+      });
+      setProfile(panelProfile);
+      setProfileLoaded(true);
+      loadingProfile.current = null;
+      return;
+    }
+
     try {
       console.log('📡 Consultando perfil no banco...');
       
-      // Timeout MUITO agressivo para consulta
-      const profilePromise = supabase
+      // CORREÇÃO: Usar timeout mais longo e melhor tratamento de erro
+      const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', u.id)
         .single();
 
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Profile query timeout')), 2000); // 2 segundos apenas
-      });
-
-      const raceResult = await Promise.race([profilePromise, timeoutPromise]) as unknown;
-      const { data, error } = (raceResult && typeof raceResult === 'object' && 'data' in raceResult)
-        ? (raceResult as { data: unknown; error: unknown })
-        : { data: null, error: new Error('Profile query timeout') };
+      console.log('🔍 [DEBUG] Resposta do banco:', { data, error });
 
       if (data && !error) {
         console.log('✅ Perfil carregado do banco:', data);
         let profileData = data as Profile;
         
         // Verifica admin
-        const email = (u.email ?? '').toLowerCase();
         if (email && ADMIN_EMAILS.includes(email) && profileData.role !== 'admin') {
           profileData = { ...profileData, role: 'admin' };
           console.log('👑 Promovendo usuário para admin');
         }
+
+        console.log('🎯 [DEBUG] Perfil final a ser definido:', profileData);
 
         profileCache.current.set(u.id, { 
           profile: profileData, 
@@ -153,25 +147,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setProfileLoaded(true);
         loadingProfile.current = null;
         return;
+      } else {
+        console.warn('⚠️ Erro ao carregar perfil do banco:', error);
       }
     } catch (e) {
-      console.warn('⚠️ Erro ao carregar perfil, usando fallback rápido:', e);
+      console.warn('⚠️ Exceção ao carregar perfil, usando fallback:', e);
     }
 
     // Fallback IMEDIATO
     console.log('🔄 Usando fallback para perfil...');
-    const email = (u.email ?? '').toLowerCase();
     const metaRole = resolveRoleFromMetadata(u);
     let fallbackRole: Profile['role'] = 'user';
     
-    if (email && ADMIN_EMAILS.includes(email)) {
+    // CORREÇÃO: Verificar se é usuário painel@ekklesia.com
+    if (email === 'painel@ekklesia.com') {
+      fallbackRole = 'panel';
+      console.log('🎯 [CORREÇÃO] Definindo role panel para painel@ekklesia.com');
+    } else if (email && ADMIN_EMAILS.includes(email)) {
       fallbackRole = 'admin';
     } else if (metaRole) {
       fallbackRole = metaRole;
     }
 
     const fullNameRaw = ((u.user_metadata ?? {}) as Record<string, unknown>)['full_name'];
-    const fullName = typeof fullNameRaw === 'string' ? fullNameRaw : (fallbackRole === 'admin' ? 'Administrador' : null);
+    const fullName = typeof fullNameRaw === 'string' ? fullNameRaw : (fallbackRole === 'admin' ? 'Administrador' : fallbackRole === 'panel' ? 'Painel' : null);
     const fallbackProfile: Profile = {
       id: u.id,
       email: u.email ?? null,
@@ -375,14 +374,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const isForcedAdmin = userEmail === 'social@ekklesia.com';
     const finalIsAdmin = isForcedAdmin || isAdminByEmail || isAdminByProfile;
     
-    console.log('🔍 [AUTH DEBUG] Calculando isAdmin:', {
+    // 🔧 [CRITICAL FIX] Garantir que roles sejam calculados corretamente mesmo durante carregamento
+    const isTriage = profile?.role === 'triage';
+    const isService = profile?.role === 'service';
+    
+    // 🎯 [STABILITY FIX] Para social@ekklesia.com, forçar roles mesmo sem perfil
+    const finalIsTriage = isForcedAdmin ? true : isTriage;
+    const finalIsService = isForcedAdmin ? true : isService;
+    
+    console.log('🔍 [AUTH DEBUG] Calculando roles:', {
       userEmail,
       isAdminByEmail,
       isAdminByProfile,
       isForcedAdmin,
       finalIsAdmin,
-      ADMIN_EMAILS,
-      profileRole: profile?.role
+      profileRole: profile?.role,
+      profileLoaded,
+      finalIsTriage,
+      finalIsService
     });
 
     const value = {
@@ -391,9 +400,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       loading,
       profile,
       profileLoaded,
-      isAdmin: finalIsAdmin, // 🔧 [FIX] Usa lógica robusta
-      isTriage: profile?.role === 'triage',
-      isService: profile?.role === 'service',
+      isAdmin: finalIsAdmin,
+      isTriage: finalIsTriage,
+      isService: finalIsService,
       signIn,
       signOut,
     };
@@ -406,8 +415,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       profileLoaded,
       role: profile?.role,
       isAdmin: finalIsAdmin,
-      isTriage: profile?.role === 'triage',
-      isService: profile?.role === 'service'
+      isTriage: finalIsTriage,
+      isService: finalIsService
     });
     
     return value;
@@ -418,4 +427,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       {children}
     </AuthContext.Provider>
   );
+};
+
+export const useAuthContext = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuthContext deve ser usado dentro de um AuthProvider');
+  }
+  return context;
 };

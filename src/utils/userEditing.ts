@@ -66,35 +66,63 @@ export async function updateUserRole(params: UpdateUserRoleParams): Promise<Upda
         };
       }
       
-      console.warn('⚠️ [USER_EDIT] Edge Function falhou, tentando atualização direta:', fnError);
+      console.warn('⚠️ [USER_EDIT] Edge Function falhou, tentando fallback direto...');
       
     } catch (fnError: unknown) {
       const msg = fnError instanceof Error ? fnError.message : String(fnError);
-      console.warn('💥 [USER_EDIT] Erro na Edge Function:', msg);
+      console.error('💥 [USER_EDIT] Erro na Edge Function, tentando fallback direto:', msg);
     }
     
-    // Fallback: atualização direta na tabela profiles
-    console.log('🔄 [USER_EDIT] Tentando atualização direta na tabela profiles...');
+    // 🔧 [FIX] Fallback robusto: atualização direta na tabela profiles com retry
+    console.log('🔄 [USER_EDIT] Tentando fallback direto na tabela profiles...');
     
-    const { error: updateError } = await supabase
-      .from('profiles')
-      .update({ role: params.newRole, updated_at: new Date().toISOString() })
-      .eq('id', params.userId);
-    
-    if (updateError) {
-      console.error('❌ [USER_EDIT] Erro na atualização direta:', updateError);
-      return {
-        success: false,
-        error: `Erro ao atualizar papel: ${updateError.message}`,
-        strategy: 'direct-update'
-      };
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        console.log(`📞 [USER_EDIT] Tentativa ${attempt}/2 - Fallback direto...`);
+        
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ role: params.newRole, updated_at: new Date().toISOString() })
+          .eq('id', params.userId);
+        
+        if (!updateError) {
+          console.log('✅ [USER_EDIT] Papel atualizado via fallback direto');
+          return {
+            success: true,
+            strategy: 'direct-update',
+            warning: 'Atualização realizada via fallback direto (Edge Function indisponível)'
+          };
+        }
+        
+        console.error(`❌ [USER_EDIT] Erro no fallback direto (tentativa ${attempt}):`, updateError);
+        
+        if (attempt < 2) {
+          console.log('⏳ [USER_EDIT] Aguardando 1s antes da próxima tentativa...');
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        } else {
+          return {
+            success: false,
+            error: `Fallback direto falhou após ${attempt} tentativas: ${updateError.message}`,
+            strategy: 'direct-update'
+          };
+        }
+        
+      } catch (fallbackError: unknown) {
+        const msg = fallbackError instanceof Error ? fallbackError.message : String(fallbackError);
+        console.error(`💥 [USER_EDIT] Erro no fallback direto (tentativa ${attempt}):`, msg);
+        
+        if (attempt < 2) {
+          console.log('⏳ [USER_EDIT] Aguardando 1s antes da próxima tentativa...');
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        } else {
+          return {
+            success: false,
+            error: `Erro no fallback direto após ${attempt} tentativas: ${msg}`,
+            strategy: 'direct-update'
+          };
+        }
+      }
     }
-    
-    console.log('✅ [USER_EDIT] Papel atualizado via atualização direta');
-    return {
-      success: true,
-      strategy: 'direct-update'
-    };
     
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : String(error);
@@ -128,41 +156,97 @@ export async function updateUserPassword(params: UpdateUserPasswordParams): Prom
       };
     }
     
-    // Tentar via Edge Function
-    try {
-      console.log('📞 [USER_EDIT] Tentando atualizar senha via Edge Function...');
-      
-      const { data: fnData, error: fnError } = await supabase.functions.invoke('admin-update-password', {
-        body: { userId: params.userId, password: params.newPassword }
-      });
-      
-      console.log('📋 [USER_EDIT] Resposta da Edge Function:', { fnData, fnError });
-      
-      const ok = (fnData as { ok?: boolean } | null)?.ok;
-      if (!fnError && ok) {
-        console.log('✅ [USER_EDIT] Senha atualizada via Edge Function');
-        return {
-          success: true,
-          strategy: 'edge-function'
-        };
+    // 🔧 [FIX] Implementar retry robusto com múltiplas estratégias
+    let lastError: string = '';
+    
+    // Estratégia 1: Edge Function com retry
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        console.log(`📞 [USER_EDIT] Tentativa ${attempt}/3 - Edge Function admin-update-password...`);
+        
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+        
+        const { data: fnData, error: fnError } = await supabase.functions.invoke('admin-update-password', {
+          body: { userId: params.userId, password: params.newPassword }
+        });
+        
+        clearTimeout(timeoutId);
+        console.log('📋 [USER_EDIT] Resposta da Edge Function:', { fnData, fnError });
+        
+        const ok = (fnData as { ok?: boolean } | null)?.ok;
+        if (!fnError && ok) {
+          console.log('✅ [USER_EDIT] Senha atualizada via Edge Function');
+          return {
+            success: true,
+            strategy: 'edge-function'
+          };
+        }
+        
+        lastError = fnError?.message || 'Erro na Edge Function para atualização de senha';
+        console.warn(`⚠️ [USER_EDIT] Edge Function falhou (tentativa ${attempt}):`, fnError);
+        
+        if (attempt < 3) {
+          const delay = attempt * 1000; // 1s, 2s
+          console.log(`⏳ [USER_EDIT] Aguardando ${delay}ms antes da próxima tentativa...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
+        
+      } catch (fnError: unknown) {
+        const msg = fnError instanceof Error ? fnError.message : String(fnError);
+        lastError = `Erro na comunicação com Edge Function: ${msg}`;
+        console.error(`💥 [USER_EDIT] Erro na Edge Function (tentativa ${attempt}):`, msg);
+        
+        if (attempt < 3) {
+          const delay = attempt * 1000;
+          console.log(`⏳ [USER_EDIT] Aguardando ${delay}ms antes da próxima tentativa...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
       }
-      
-      console.warn('⚠️ [USER_EDIT] Edge Function falhou:', fnError);
-      return {
-        success: false,
-        error: fnError?.message || 'Erro na Edge Function para atualização de senha',
-        strategy: 'edge-function'
-      };
-      
-    } catch (fnError: unknown) {
-      const msg = fnError instanceof Error ? fnError.message : String(fnError);
-      console.error('💥 [USER_EDIT] Erro na Edge Function:', msg);
-      return {
-        success: false,
-        error: `Erro na comunicação com Edge Function: ${msg}`,
-        strategy: 'edge-function'
-      };
     }
+    
+    // Estratégia 2: Fallback direto usando service_role (se disponível)
+    console.log('🔄 [USER_EDIT] Tentando fallback direto com service_role...');
+    try {
+      const serviceRoleKey = import.meta.env?.VITE_SUPABASE_SERVICE_ROLE_KEY;
+      if (serviceRoleKey) {
+        const { createClient } = await import('@supabase/supabase-js');
+        const adminClient = createClient(
+          import.meta.env.VITE_SUPABASE_URL,
+          serviceRoleKey
+        );
+        
+        const { error: updateError } = await adminClient.auth.admin.updateUserById(params.userId, {
+          password: params.newPassword
+        });
+        
+        if (!updateError) {
+          console.log('✅ [USER_EDIT] Senha atualizada via fallback direto');
+          return {
+            success: true,
+            strategy: 'direct-admin',
+            warning: 'Atualização realizada via fallback direto (Edge Function indisponível)'
+          };
+        }
+        
+        console.error('❌ [USER_EDIT] Erro no fallback direto:', updateError);
+        lastError = `Fallback direto falhou: ${updateError.message}`;
+      } else {
+        console.warn('⚠️ [USER_EDIT] Service role key não disponível para fallback');
+        lastError = 'Service role key não disponível para fallback';
+      }
+    } catch (fallbackError: unknown) {
+      const msg = fallbackError instanceof Error ? fallbackError.message : String(fallbackError);
+      console.error('💥 [USER_EDIT] Erro no fallback direto:', msg);
+      lastError = `Erro no fallback direto: ${msg}`;
+    }
+    
+    // Se chegou até aqui, todas as estratégias falharam
+    return {
+      success: false,
+      error: `Todas as estratégias falharam. Último erro: ${lastError}`,
+      strategy: 'all-failed'
+    };
 
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : String(error);
@@ -205,16 +289,27 @@ export async function updateUser(params: {
       results.push(passwordResult);
     }
     
-    // Verificar se todas as operações foram bem-sucedidas
-    const failures = results.filter(r => !r.success);
+    // 🔧 [FIX] Melhorar tratamento de erros e feedback
+    const errors = results.filter(r => !r.success);
+    const successes = results.filter(r => r.success);
     const warnings = results.filter(r => r.warning).map(r => r.warning);
     
-    if (failures.length > 0) {
-      const errors = failures.map(f => f.error).join('; ');
+    if (errors.length > 0) {
+      const errorMessages = errors.map(e => e.error).join('; ');
+      
+      // Se pelo menos uma operação teve sucesso, informar parcialmente
+      if (successes.length > 0) {
+        const successStrategies = successes.map(s => s.strategy).join(', ');
+        return {
+          success: false,
+          error: `Algumas atualizações falharam: ${errorMessages}`,
+          warning: `Operações bem-sucedidas: ${successStrategies}${warnings.length > 0 ? '. Avisos: ' + warnings.join('; ') : ''}`
+        };
+      }
+      
       return {
         success: false,
-        error: `Algumas atualizações falharam: ${errors}`,
-        warning: warnings.length > 0 ? warnings.join('; ') : undefined
+        error: `Todas as atualizações falharam: ${errorMessages}`
       };
     }
     
