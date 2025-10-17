@@ -195,7 +195,23 @@ const UserManagement = () => {
         
       } else {
         console.error('❌ [USER_MANAGEMENT] Falha na edição:', result.error);
-        toast.error(`Erro ao atualizar usuário: ${result.error}`);
+        // 🔧 [FIX] Melhorar feedback de erro com detalhes
+        const errorMsg = `Erro ao atualizar usuário: ${result.error}`;
+        const warningMsg = result.warning ? `\n\nAvisos: ${result.warning}` : '';
+        
+        toast.error(errorMsg + warningMsg, {
+          duration: 8000, // Mais tempo para ler mensagens longas
+          style: {
+            maxWidth: '500px',
+            fontSize: '14px'
+          }
+        });
+        
+        console.error('❌ [USER_MANAGEMENT] Erro na atualização:', {
+          error: result.error,
+          warning: result.warning,
+          strategy: result.strategy
+        });
       }
       
     } catch (error: unknown) {

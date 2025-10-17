@@ -100,11 +100,36 @@ export const QueueProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, [servicesQuery.data]);
 
+  // 🔧 [FIX] Ref para controlar quando devemos ignorar a sincronização automática
+  const skipSyncRef = useRef(false);
+
   useEffect(() => {
     if (ticketsQuery.data) {
+      console.log('🔄 [SYNC_TICKETS] Sincronizando tickets do banco:', ticketsQuery.data.length);
       setTickets(ticketsQuery.data);
-      const called = ticketsQuery.data.find(t => t.status === 'called');
-      setCurrentTicket(called || null);
+      
+      // 🔧 [FIX] Se acabamos de fazer uma operação manual, não sincronizar automaticamente
+      if (skipSyncRef.current) {
+        console.log('🔄 [SYNC_TICKETS] Pulando sincronização - operação manual recente');
+        skipSyncRef.current = false;
+        return;
+      }
+      
+      // 🔧 [FIX] Lógica simplificada para sincronização do currentTicket
+      const calledTicket = ticketsQuery.data.find(t => t.status === 'called');
+      console.log('🔄 [SYNC_TICKETS] Ticket com status "called" encontrado:', calledTicket?.number || 'nenhum');
+      console.log('🔄 [SYNC_TICKETS] CurrentTicket atual:', currentTicket?.number || 'nenhum');
+      
+      // Se há um ticket chamado no banco e não é o mesmo que temos localmente
+      if (calledTicket && (!currentTicket || currentTicket.id !== calledTicket.id)) {
+        console.log('🔄 [SYNC_TICKETS] Atualizando currentTicket para:', calledTicket.number);
+        setCurrentTicket(calledTicket);
+      }
+      // Se não há ticket chamado no banco, mas temos um localmente
+      else if (!calledTicket && currentTicket) {
+        console.log('🔄 [SYNC_TICKETS] Limpando currentTicket - nenhum ticket "called" no banco');
+        setCurrentTicket(null);
+      }
     }
   }, [ticketsQuery.data]);
 
@@ -271,6 +296,8 @@ export const QueueProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
 
   const generateTicket = useCallback(async (service: ServiceType, type: TicketType, clientData?: ClientData): Promise<Ticket> => {
+    console.log('🎫 [GENERATE_TICKET] Iniciando geração de senha:', { service, type, clientData });
+    
     // Bloquear geração se serviço estiver pausado
     const serviceConfigPause = services.find(s => s.id === service);
     if (serviceConfigPause?.paused) {
@@ -284,6 +311,8 @@ export const QueueProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const endOfDay = new Date();
       endOfDay.setHours(23, 59, 59, 999);
 
+      console.log('🎫 [GENERATE_TICKET] Verificando limite diário:', { maxTickets: serviceConfigPause.maxTickets });
+      
       const { count, error: countErr } = await supabase
         .from('tickets')
         .select('id', { count: 'exact', head: true })
@@ -298,13 +327,15 @@ export const QueueProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // Tenta gerar número via RPC; se falhar, faz fallback baseado no último número do serviço
     let ticketNumber: string | null = null;
     try {
+      console.log('🎫 [GENERATE_TICKET] Tentando gerar número via RPC...');
       const { data: generatedNumber, error: rpcError } = await supabase.rpc('generate_ticket_number', {
         service_id: service,
       });
       if (rpcError) throw rpcError;
       ticketNumber = generatedNumber as string;
+      console.log('🎫 [GENERATE_TICKET] Número gerado via RPC:', ticketNumber);
     } catch (rpcError) {
-      console.warn('RPC generate_ticket_number falhou, usando fallback:', rpcError);
+      console.warn('🎫 [GENERATE_TICKET] RPC generate_ticket_number falhou, usando fallback:', rpcError);
       const serviceConfig = services.find(s => s.id === service);
       const prefix = serviceConfig?.prefix ?? 'SN';
 
@@ -317,7 +348,7 @@ export const QueueProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         .limit(1);
 
       if (lastErr) {
-        console.error('Erro buscando último ticket:', lastErr);
+        console.error('🎫 [GENERATE_TICKET] Erro buscando último ticket:', lastErr);
       }
 
       const last = lastTickets && lastTickets[0]?.ticket_number as string | undefined;
@@ -325,6 +356,7 @@ export const QueueProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const lastNum = match ? parseInt(match[1], 10) : 0;
       const nextNum = (isNaN(lastNum) ? 0 : lastNum) + 1;
       ticketNumber = `${prefix}-${String(nextNum).padStart(3, '0')}`;
+      console.log('🎫 [GENERATE_TICKET] Número gerado via fallback:', ticketNumber);
     }
 
     // Normalizar o formato: PREFIXO(+P para prioritário)-NNN
@@ -335,12 +367,22 @@ export const QueueProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const seqPadded = seq.length >= 3 ? seq : String(parseInt(seq, 10) || 1).toString().padStart(3, '0');
     ticketNumber = `${prefix}${type === 'priority' ? 'P' : ''}-${seqPadded}`;
 
+    console.log('🎫 [GENERATE_TICKET] Número final normalizado:', ticketNumber);
+
     // Inserir no Supabase
     // Normaliza dados do cliente para maiúsculas
     const normalizedClientData = clientData ? {
       ...clientData,
       name: (clientData.name || '').trim().toUpperCase(),
     } : undefined;
+
+    console.log('🎫 [GENERATE_TICKET] Inserindo no banco de dados...', {
+      ticket_number: ticketNumber,
+      type,
+      service_id: service,
+      status: 'waiting',
+      client_data: normalizedClientData
+    });
 
     const { data, error } = await supabase
       .from('tickets')
@@ -358,9 +400,11 @@ export const QueueProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       .single();
 
     if (error) {
-      console.error('Error generating ticket:', error);
+      console.error('🎫 [GENERATE_TICKET] Erro ao inserir no banco:', error);
       throw error;
     }
+
+    console.log('🎫 [GENERATE_TICKET] Senha gerada com sucesso:', data);
 
     const ticket: Ticket = {
       id: data.id,
@@ -389,11 +433,30 @@ export const QueueProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [tickets]);
 
   const callNextTicket = useCallback(async (service?: ServiceType) => {
+    console.log('📞 [CALL_NEXT_TICKET] Iniciando chamada da próxima senha:', { service });
+    console.log('📞 [CALL_NEXT_TICKET] CurrentTicket antes da chamada:', { 
+      currentTicketId: currentTicket?.id, 
+      currentTicketNumber: currentTicket?.number 
+    });
+    
     const waiting = getWaitingTickets(service);
-    if (waiting.length === 0) return;
+    console.log('📞 [CALL_NEXT_TICKET] Senhas em espera encontradas:', waiting.length);
+    
+    if (waiting.length === 0) {
+      console.log('📞 [CALL_NEXT_TICKET] Nenhuma senha em espera');
+      toast.info('Não há senhas em espera para chamar');
+      return;
+    }
 
     const nextTicket = waiting[0];
+    console.log('📞 [CALL_NEXT_TICKET] Próxima senha a ser chamada:', { 
+      id: nextTicket.id, 
+      number: nextTicket.number,
+      service: nextTicket.service 
+    });
+    
     const { data: authUser } = await supabase.auth.getUser();
+    console.log('📞 [CALL_NEXT_TICKET] Usuário autenticado:', authUser.user?.id);
     
     const { error } = await supabase
       .from('tickets')
@@ -405,14 +468,33 @@ export const QueueProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       .eq('id', nextTicket.id);
 
     if (error) {
+      console.error('📞 [CALL_NEXT_TICKET] Erro ao chamar senha:', error);
       notifyError(error, 'Erro ao chamar senha');
       return;
     }
 
-    queryClient.invalidateQueries({ queryKey: ['tickets'] });
-  }, [getWaitingTickets, queryClient]);
+    console.log('📞 [CALL_NEXT_TICKET] Senha chamada com sucesso no banco de dados');
+
+    // 🔧 [FIX] Atualizar currentTicket IMEDIATAMENTE e marcar para pular próxima sincronização
+    console.log('📞 [CALL_NEXT_TICKET] Atualizando currentTicket para a senha chamada');
+    const updatedTicket = { ...nextTicket, status: 'called' as const, calledAt: new Date() };
+    setCurrentTicket(updatedTicket);
+    skipSyncRef.current = true; // Evitar que a sincronização automática interfira
+    console.log('📞 [CALL_NEXT_TICKET] CurrentTicket atualizado:', { 
+      id: updatedTicket.id, 
+      number: updatedTicket.number 
+    });
+
+    console.log('📞 [CALL_NEXT_TICKET] Invalidando queries para atualizar interface');
+    await queryClient.invalidateQueries({ queryKey: ['tickets'] });
+    
+    console.log('📞 [CALL_NEXT_TICKET] Chamada finalizada');
+    toast.success(`Senha ${nextTicket.number} chamada com sucesso!`);
+  }, [getWaitingTickets, queryClient, currentTicket]);
 
   const recallTicket = useCallback(async (ticketId: string) => {
+    console.log('🔄 [RECALL_TICKET] Iniciando repetição de chamada:', { ticketId });
+    
     const { error } = await supabase
       .from('tickets')
       .update({
@@ -422,9 +504,12 @@ export const QueueProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       .eq('id', ticketId);
 
     if (error) {
+      console.error('🔄 [RECALL_TICKET] Erro ao repetir chamada:', error);
       notifyError(error, 'Erro ao chamar novamente');
       return;
     }
+
+    console.log('🔄 [RECALL_TICKET] Chamada repetida com sucesso');
 
     queryClient.invalidateQueries({ queryKey: ['tickets'] });
   }, [queryClient]);
@@ -463,7 +548,16 @@ export const QueueProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [queryClient]);
 
   const completeTicket = useCallback(async (ticketId: string, notes?: string) => {
+    console.log('✅ [COMPLETE_TICKET] Iniciando conclusão de atendimento:', { ticketId, notes });
+    console.log('✅ [COMPLETE_TICKET] CurrentTicket antes da conclusão:', { 
+      currentTicketId: currentTicket?.id, 
+      currentTicketNumber: currentTicket?.number,
+      isCurrentTicket: currentTicket?.id === ticketId 
+    });
+    
     const { data: authUser } = await supabase.auth.getUser();
+    console.log('✅ [COMPLETE_TICKET] Usuário autenticado:', authUser.user?.id);
+    
     const { error } = await supabase
       .from('tickets')
       .update({
@@ -475,39 +569,70 @@ export const QueueProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       .eq('id', ticketId);
 
     if (error) {
+      console.error('✅ [COMPLETE_TICKET] Erro ao concluir atendimento:', error);
       notifyError(error, 'Erro ao concluir atendimento');
       return;
     }
 
+    console.log('✅ [COMPLETE_TICKET] Atendimento concluído com sucesso no banco de dados');
+
+    // 🔧 [FIX] Limpar currentTicket IMEDIATAMENTE e marcar para pular próxima sincronização
     if (currentTicket?.id === ticketId) {
+      console.log('✅ [COMPLETE_TICKET] Limpando currentTicket pois é o ticket concluído');
       setCurrentTicket(null);
+      skipSyncRef.current = true; // Evitar que a sincronização automática interfira
+      console.log('✅ [COMPLETE_TICKET] CurrentTicket limpo - setCurrentTicket(null) executado');
+    } else {
+      console.log('✅ [COMPLETE_TICKET] CurrentTicket não foi alterado - não é o ticket atual');
     }
 
-    queryClient.invalidateQueries({ queryKey: ['tickets'] });
+    console.log('✅ [COMPLETE_TICKET] Invalidando queries para atualizar interface');
+    await queryClient.invalidateQueries({ queryKey: ['tickets'] });
+    
+    console.log('✅ [COMPLETE_TICKET] Conclusão finalizada');
+    toast.success('Atendimento concluído com sucesso!');
   }, [currentTicket, queryClient]);
 
-  const cancelTicket = useCallback(async (ticketId: string, notes?: string) => {
-    const { data: authUser } = await supabase.auth.getUser();
+  const cancelTicket = useCallback(async (ticketId: string) => {
+    console.log('❌ [CANCEL_TICKET] Iniciando cancelamento:', { ticketId });
+    console.log('❌ [CANCEL_TICKET] CurrentTicket antes do cancelamento:', { 
+      currentTicketId: currentTicket?.id, 
+      currentTicketNumber: currentTicket?.number,
+      isCurrentTicket: currentTicket?.id === ticketId 
+    });
+    
+    // 🔧 [FIX] Corrigir campo do banco: canceled_at (não cancelled_at)
     const { error } = await supabase
       .from('tickets')
       .update({
         status: 'canceled',
         canceled_at: new Date().toISOString(),
-        notes: notes ?? null,
-        attendant_id: authUser.user?.id ?? null,
       })
       .eq('id', ticketId);
 
     if (error) {
+      console.error('❌ [CANCEL_TICKET] Erro ao cancelar ticket:', error);
       notifyError(error, 'Erro ao cancelar senha');
       return;
     }
 
+    console.log('❌ [CANCEL_TICKET] Ticket cancelado com sucesso no banco de dados');
+
+    // 🔧 [FIX] Limpar currentTicket IMEDIATAMENTE e marcar para pular próxima sincronização
     if (currentTicket?.id === ticketId) {
+      console.log('❌ [CANCEL_TICKET] Limpando currentTicket pois é o ticket cancelado');
       setCurrentTicket(null);
+      skipSyncRef.current = true; // Evitar que a sincronização automática interfira
+      console.log('❌ [CANCEL_TICKET] CurrentTicket limpo - setCurrentTicket(null) executado');
+    } else {
+      console.log('❌ [CANCEL_TICKET] CurrentTicket não foi alterado - não é o ticket atual');
     }
 
-    queryClient.invalidateQueries({ queryKey: ['tickets'] });
+    console.log('❌ [CANCEL_TICKET] Invalidando queries para atualizar interface');
+    await queryClient.invalidateQueries({ queryKey: ['tickets'] });
+    
+    console.log('❌ [CANCEL_TICKET] Cancelamento finalizado');
+    toast.success('Senha cancelada com sucesso!');
   }, [currentTicket, queryClient]);
 
   const reissueTicket = useCallback(async (ticketId: string): Promise<Ticket | null> => {
